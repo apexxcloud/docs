@@ -7,12 +7,12 @@
   },
   "favicon": "/favicon.svg",
   "colors": {
-    "primary": "#0D9373",
-    "light": "#07C983",
-    "dark": "#0D9373",
+    "primary": "#1E90FF", // Dodger Blue
+    "light": "#F0F8FF",   // Alice Blue
+    "dark": "#104E8B",    // Deep Sky Blue 4
     "anchors": {
-      "from": "#0D9373",
-      "to": "#07C983"
+      "from": "#1E90FF",
+      "to": "#104E8B"
     }
   },
   "topbarLinks": [
