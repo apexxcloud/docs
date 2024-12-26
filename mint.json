@@ -16,6 +16,9 @@
     }
   },
   "theme": "prism",
+  "modeToggle": {
+   "default": "dark"
+  },
   "topbarLinks": [
     {
       "name": "Support",
