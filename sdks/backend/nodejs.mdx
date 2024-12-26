@@ -226,22 +226,3 @@ try {
   console.error("Upload failed:", error);
 }
 ```
-
-## Best Practices
-
-1. **Error Handling**
-
-   - Always wrap SDK operations in try-catch blocks
-   - Handle specific error codes appropriately
-   - Log errors for debugging
-
-2. **Large Files**
-
-   - Use multipart upload for files larger than 100MB
-   - Implement retry logic for failed part uploads
-   - Monitor upload progress
-
-3. **Security**
-   - Never expose your secret key in client-side code
-   - Use appropriate file visibility settings
-   - Set reasonable expiration times for signed URLs

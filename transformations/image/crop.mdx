@@ -105,28 +105,3 @@ tr-c_crop,g_face         # Focus on detected face
 tr-c_crop,g_faces        # Focus on multiple faces
 tr-c_crop,g_object:car   # Focus on detected object
 ```
-
-## Best Practices
-
-### Choosing the Right Mode
-
-- Use `crop` when exact dimensions are required
-- Use `fill` for hero images and featured content
-- Use `fit` for product images and artwork
-- Use `pad` for consistent layouts with aspect ratio preservation
-- Use `limit` for user uploads
-- Avoid `scale` unless aspect ratio distortion is acceptable
-
-### Gravity Tips
-
-- Use `g_face` for portraits and profile pictures (with `crop` or `fill`)
-- Test different gravity settings with various image types
-- Consider content placement when choosing gravity
-- Remember gravity only works with `crop` and `fill` modes
-
-### Optimization
-
-- Combine with quality settings for better performance
-- Use appropriate dimensions for display size
-- Consider responsive image techniques
-- Test crops across different image types and sizes

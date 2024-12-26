@@ -61,31 +61,3 @@ Combine gravity with x/y offsets for precise positioning:
 ```
 tr-l_text:Copyright:l_gravity_southeast:l_x_10:l_y_10
 ```
-
-## Common Use Cases
-
-### 1. Watermarking
-
-```
-tr-w_800,h_600,c_fill+l_image:watermark.png:l_gravity_center:l_o_30
-```
-
-### 2. Social Media Templates
-
-```
-tr-w_1200,h_630,c_fill+l_text:Breaking News:l_font_Arial:l_size_48:l_color_ffffff:l_gravity_north:l_y_50
-```
-
-### 3. Product Labels
-
-```
-tr-w_500,h_500,c_fill+l_text:SALE:l_font_Arial:l_size_32:l_color_ff0000:l_gravity_northeast
-```
-
-### 4. Multiple Overlays
-
-Chain multiple overlays using plus signs:
-
-```
-tr-w_1000,h_1000+l_image:logo.png:l_gravity_northwest+l_text:Copyright 2024:l_gravity_southeast
-```

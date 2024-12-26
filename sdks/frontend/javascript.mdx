@@ -225,28 +225,3 @@ The multipart upload process includes different phases where errors might occur:
 | upload   | During the upload of individual parts         |
 | complete | During the completion of multipart upload     |
 | cancel   | During attempt to cancel a failed upload      |
-
-## Best Practices
-
-1. **Error Handling**
-
-   - Always implement error handling using try-catch and onError callback
-   - Handle both upload failures and aborted uploads
-   - Check error phases for multipart uploads
-
-2. **Progress Updates**
-
-   - Use onProgress for real-time upload progress
-   - For multipart uploads, track both overall and part-specific progress
-   - Consider debouncing progress updates for better UI performance
-
-3. **Signed URLs**
-
-   - Implement secure server-side signed URL generation
-   - Cache signed URLs when appropriate
-   - Handle URL expiration gracefully
-
-4. **Upload Cancellation**
-   - Create a new AbortController for each upload
-   - Clean up controllers when component unmounts
-   - Handle cancellation events appropriately

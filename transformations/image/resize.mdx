@@ -41,30 +41,3 @@ Apply a zoom factor to the dimensions:
 ```
 tr-z_1.5
 ```
-
-## Best Practices
-
-- Specify both width and height for predictable results
-- Use DPR for responsive images
-- Consider aspect ratio when resizing to prevent distortion
-- Chain with other transformations: `tr-w_500,h_300+e_grayscale`
-
-## Examples
-
-### Responsive Image
-
-```
-tr-w_800,dpr_2
-```
-
-### Thumbnail Creation
-
-```
-tr-w_200,h_200,ar_1
-```
-
-### Mobile-Optimized Image
-
-```
-tr-w_400,dpr_2,z_1.2
-```

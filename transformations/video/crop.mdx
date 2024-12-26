@@ -112,30 +112,3 @@ tr-c_pad,b_FF0000    # Red background
 ```
 tr-c_pad,b_blur      # Blurred edges from video content
 ```
-
-## Best Practices
-
-### Choosing the Right Mode
-
-- Use `crop` when exact dimensions are required
-- Use `fill` for hero videos and featured content
-- Use `fit` for product videos and instructional content
-- Use `pad` for consistent layouts with aspect ratio preservation
-- Use `limit` for user uploads
-- Avoid `scale` unless aspect ratio distortion is acceptable
-
-### Gravity Tips
-
-- Test different gravity settings with various video types
-- Consider content placement when choosing gravity
-- Remember gravity only works with `crop` and `fill` modes
-- Use center gravity for general-purpose cropping
-- Consider the subject's movement throughout the video
-
-### Optimization
-
-- Combine with format settings for better performance
-- Use appropriate dimensions for playback device
-- Consider responsive video techniques
-- Test crops across different video types and lengths
-- Consider the entire duration of the video when choosing crop settings
