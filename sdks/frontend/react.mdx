@@ -31,11 +31,18 @@ function CustomUploader() {
   const [progress, setProgress] = useState(0);
   const abortController = useRef(new AbortController());
 
+  // Function to get signed URLs from your backend
+  const getSignedUrl = async (type: string, params: SignedUrlOptions) => {
+    const response = await fetch(`/api/get-signed-url/${type}`, {
+      method: "POST",
+      body: JSON.stringify(params),
+    });
+    return response.text();
+  };
+
   const handleUpload = async (file: File) => {
     try {
-      const signedUrl = await getSignedUrl(file);
-
-      await upload(signedUrl, file, {
+      await upload(getSignedUrl, file, {
         signal: abortController.current.signal,
         onStart: (event) => {
           console.log(`Starting upload: ${event.file.name}`);
@@ -59,10 +66,6 @@ function CustomUploader() {
     }
   };
 
-  const cancelUpload = () => {
-    abortController.current.abort();
-  };
-
   // Clean up on unmount
   useEffect(() => {
     return () => {
@@ -79,8 +82,68 @@ function CustomUploader() {
           if (file) handleUpload(file);
         }}
       />
-      <button onClick={cancelUpload}>Cancel Upload</button>
+      <button onClick={() => abortController.current.abort()}>
+        Cancel Upload
+      </button>
       <progress value={progress} max="100" />
+    </div>
+  );
+}
+```
+
+### Multipart Upload Example
+
+```tsx
+function MultipartUploader() {
+  const { uploadMultipart } = useApexxCloud();
+  const [progress, setProgress] = useState(0);
+  const [partProgress, setPartProgress] = useState<Record<number, number>>({});
+  const abortController = useRef(new AbortController());
+
+  const handleUpload = async (file: File) => {
+    try {
+      await uploadMultipart(getSignedUrl, file, {
+        signal: abortController.current.signal,
+        partSize: 5 * 1024 * 1024, // 5MB chunks
+        concurrency: 3, // Number of concurrent uploads
+        onProgress: (event) => {
+          setProgress(event.progress);
+          setPartProgress((prev) => ({
+            ...prev,
+            [event.part.number]: event.part.progress,
+          }));
+        },
+        onPartComplete: (part) => {
+          console.log(`Part ${part.PartNumber} completed`);
+        },
+        onComplete: (event) => {
+          console.log("Upload complete:", event.response);
+        },
+        onError: (event) => {
+          console.error("Upload failed:", event.error);
+          console.error("Failed during phase:", event.phase);
+        },
+      });
+    } catch (error) {
+      console.error("Upload failed:", error);
+    }
+  };
+
+  return (
+    <div>
+      <input
+        type="file"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) handleUpload(file);
+        }}
+      />
+      <div>Overall Progress: {progress}%</div>
+      {Object.entries(partProgress).map(([part, progress]) => (
+        <div key={part}>
+          Part {part}: {progress}%
+        </div>
+      ))}
     </div>
   );
 }
@@ -88,11 +151,12 @@ function CustomUploader() {
 
 ### Hook Return Value
 
-| Property | Type                                                                       | Description               |
-| -------- | -------------------------------------------------------------------------- | ------------------------- |
-| `upload` | `(signedUrl: string, file: File, options?: UploadOptions) => Promise<any>` | Function to upload a file |
+| Property          | Type                                                                                           | Description                     |
+| ----------------- | ---------------------------------------------------------------------------------------------- | ------------------------------- |
+| `upload`          | `(getSignedUrl: GetSignedUrlFn, file: File, options?: UploadOptions) => Promise<any>`          | Function for single file upload |
+| `uploadMultipart` | `(getSignedUrl: GetSignedUrlFn, file: File, options?: MultipartUploadOptions) => Promise<any>` | Function for multipart upload   |
 
-### UploadOptions
+### Upload Options
 
 | Option       | Type                             | Description                       |
 | ------------ | -------------------------------- | --------------------------------- |
@@ -102,9 +166,23 @@ function CustomUploader() {
 | `onComplete` | `(event: CompleteEvent) => void` | Called when upload completes      |
 | `onError`    | `(event: ErrorEvent) => void`    | Called if upload fails            |
 
+### Multipart Upload Options
+
+Includes all Upload Options plus:
+
+| Option           | Type                                | Description                                    |
+| ---------------- | ----------------------------------- | ---------------------------------------------- |
+| `partSize`       | `number`                            | Size of each part in bytes (default: 5MB)      |
+| `concurrency`    | `number`                            | Number of concurrent part uploads (default: 3) |
+| `onPartComplete` | `(part: PartCompleteEvent) => void` | Called when a part completes                   |
+
+### Backend Implementation
+
+See the [JavaScript SDK documentation](/sdks/frontend/javascript#backend-implementation) for details on implementing the backend signed URL endpoint.
+
 ## FileUploader Component
 
-A React component that provides file upload functionality with built-in UI and progress tracking.
+A React component that provides a drag-and-drop file upload interface with progress tracking and error handling.
 
 ### Basic Usage
 
@@ -112,16 +190,12 @@ A React component that provides file upload functionality with built-in UI and p
 import { FileUploader } from "@apexxcloud/react";
 
 function App() {
-  const getSignedUrl = async (file: File) => {
+  const getSignedUrl = async (type: string, params: SignedUrlOptions) => {
     const response = await fetch("/api/get-signed-url", {
       method: "POST",
-      body: JSON.stringify({
-        fileName: file.name,
-        fileType: file.type,
-      }),
+      body: JSON.stringify(params),
     });
-    const { signedUrl } = await response.json();
-    return signedUrl;
+    return response.text();
   };
 
   return (
@@ -135,12 +209,15 @@ function App() {
 
 ### Props
 
-| Prop               | Type                              | Required | Description                               |
-| ------------------ | --------------------------------- | -------- | ----------------------------------------- |
-| `getSignedUrl`     | `(file: File) => Promise<string>` | Yes      | Function to get signed URL for upload     |
-| `onUploadComplete` | `(response: any) => void`         | No       | Called when upload completes successfully |
-| `onUploadError`    | `(error: any) => void`            | No       | Called if upload fails                    |
-| `onUploadProgress` | `(progress: any) => void`         | No       | Called during upload progress             |
+| Prop               | Type                       | Required | Description                                                      |
+| ------------------ | -------------------------- | -------- | ---------------------------------------------------------------- |
+| `getSignedUrl`     | `GetSignedUrlFn`           | Yes      | Function to get signed URL for upload                            |
+| `onUploadComplete` | `(response: any) => void`  | No       | Called when upload completes successfully                        |
+| `onUploadError`    | `(error: Error) => void`   | No       | Called if upload fails                                           |
+| `multipart`        | `boolean`                  | No       | Enable multipart upload (default: false)                         |
+| `accept`           | `Record<string, string[]>` | No       | File type restrictions (e.g., `{ 'image/*': ['.png', '.jpg'] }`) |
+| `maxSize`          | `number`                   | No       | Maximum file size in bytes                                       |
+| `className`        | `string`                   | No       | Additional CSS class names                                       |
 
 ### Complete Example
 
@@ -148,41 +225,106 @@ function App() {
 import { FileUploader } from "@apexxcloud/react";
 
 function UploadComponent() {
-  const getSignedUrl = async (file: File) => {
+  const getSignedUrl = async (type: string, params: SignedUrlOptions) => {
     const response = await fetch("/api/get-signed-url", {
       method: "POST",
-      body: JSON.stringify({
-        fileName: file.name,
-        fileType: file.type,
-      }),
+      body: JSON.stringify(params),
     });
-    return response.json();
-  };
-
-  const handleUploadComplete = (response) => {
-    console.log("Upload successful:", response);
-    // Handle success (e.g., show success message)
-  };
-
-  const handleUploadError = (error) => {
-    console.error("Upload failed:", error);
-    // Handle error (e.g., show error message)
-  };
-
-  const handleProgress = (progress) => {
-    console.log(`Upload progress: ${progress}%`);
-    // Update UI with progress
+    return response.text();
   };
 
   return (
     <FileUploader
       getSignedUrl={getSignedUrl}
-      onUploadComplete={handleUploadComplete}
-      onUploadError={handleUploadError}
-      onUploadProgress={handleProgress}
+      multipart={true}
+      accept={{
+        "image/*": [".png", ".jpg", ".jpeg", ".gif"],
+        "application/pdf": [".pdf"],
+      }}
+      maxSize={10 * 1024 * 1024} // 10MB
+      onUploadComplete={(response) => {
+        console.log("Upload successful:", response);
+        // Handle success (e.g., show success message)
+      }}
+      onUploadError={(error) => {
+        console.error("Upload failed:", error);
+        // Handle error (e.g., show error message)
+      }}
+      className="max-w-lg mx-auto" // Custom styling
     />
   );
 }
+```
+
+### Features
+
+1. **Drag and Drop**
+
+   - Visual feedback during drag operations
+   - File type validation
+   - Size restrictions
+
+2. **Upload Progress**
+
+   - Real-time progress bar
+   - Percentage indicator
+   - Cancel button during upload
+
+3. **Error Handling**
+
+   - Visual error messages
+   - File validation errors
+   - Upload failure handling
+
+4. **Accessibility**
+   - Keyboard navigation support
+   - ARIA attributes
+   - Focus management
+
+### Best Practices
+
+1. **File Validation**
+
+```tsx
+<FileUploader
+  accept={{
+    "image/*": [".png", ".jpg", ".jpeg"],
+    "application/pdf": [".pdf"],
+  }}
+  maxSize={5 * 1024 * 1024} // 5MB
+  onUploadError={(error) => {
+    if (error.message.includes("file size")) {
+      toast.error("File is too large");
+    } else if (error.message.includes("file type")) {
+      toast.error("Invalid file type");
+    }
+  }}
+/>
+```
+
+2. **Progress Handling**
+
+```tsx
+<FileUploader
+  getSignedUrl={getSignedUrl}
+  onUploadComplete={(response) => {
+    setUploadedFiles((prev) => [...prev, response]);
+    toast.success("File uploaded successfully");
+  }}
+  onUploadError={(error) => {
+    toast.error(`Upload failed: ${error.message}`);
+  }}
+/>
+```
+
+3. **Multipart Upload for Large Files**
+
+```tsx
+<FileUploader
+  getSignedUrl={getSignedUrl}
+  multipart={true}
+  maxSize={100 * 1024 * 1024} // 100MB
+/>
 ```
 
 ## Best Practices

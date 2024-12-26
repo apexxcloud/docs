@@ -27,111 +27,174 @@ const storage = new ApexxCloud({
 });
 ```
 
-## File Upload
+## Backend Implementation
 
-### Basic Upload with Cancel Support
+Your backend needs to implement an endpoint that generates signed URLs. Here's an example using Node.js:
 
 ```javascript
-// Create an AbortController
+const ApexxCloud = require("@apexxcloud/sdk-node");
+
+const storage = new ApexxCloud({
+  accessKey: "your-access-key",
+  secretKey: "your-secret-key",
+  region: "bucket-region",
+  bucket: "bucket-name",
+});
+
+app.post("/api/get-signed-url/:type", async (req, res) => {
+  try {
+    const { type } = req.params;
+    const params = req.body; // Contains key, mimeType, totalParts, etc.
+
+    const signedUrl = await storage.getSignedUrl(
+      "your-bucket-name",
+      params.key,
+      {
+        type: type,
+        ...params,
+      }
+    );
+
+    res.send(signedUrl);
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+});
+```
+
+The endpoint should handle these types of requests:
+
+| Type              | Description               | Required Parameters                   | Example Response                                                         |
+| ----------------- | ------------------------- | ------------------------------------- | ------------------------------------------------------------------------ |
+| upload            | Single file upload        | key, mimeType                         | `https://api.apexxcloud.com/upload?signature=...`                        |
+| start-multipart   | Start multipart upload    | key, totalParts, mimeType             | `https://api.apexxcloud.com/multipart/start?signature=...`               |
+| uploadpart        | Upload individual part    | uploadId, partNumber, key, totalParts | `https://api.apexxcloud.com/multipart/{uploadId}/upload?signature=...`   |
+| completemultipart | Complete multipart upload | uploadId, key                         | `https://api.apexxcloud.com/multipart/{uploadId}/complete?signature=...` |
+| cancelmultipart   | Cancel multipart upload   | uploadId, key                         | `https://api.apexxcloud.com/multipart/{uploadId}/cancel?signature=...`   |
+
+## File Upload
+
+### Basic Upload
+
+```javascript
 const controller = new AbortController();
 
-try {
-  const result = await storage.files.upload(signedUrl, file, {
-    signal: controller.signal, // Pass the abort signal
+// Function to get signed URLs from your backend
+const getSignedUrl = async (type, params) => {
+  const response = await fetch(`/api/get-signed-url/${type}`, {
+    method: "POST",
+    body: JSON.stringify(params),
   });
-  console.log("Upload successful:", result);
+  return response.text();
+};
+
+try {
+  const result = await storage.files.upload(file, getSignedUrl, {
+    signal: controller.signal,
+
+    onStart: (event) => {
+      console.log("Upload started:", event);
+      // event.type: 'start'
+      // event.timestamp: Start time
+      // event.file: {
+      //   name: string,
+      //   size: number,
+      //   type: string
+      // }
+    },
+
+    onProgress: (event) => {
+      console.log(`Upload progress: ${event.progress}%`);
+      // event.loaded: Bytes uploaded
+      // event.total: Total bytes
+      // event.progress: Percentage complete (0-100)
+      // event.type: 'progress'
+    },
+
+    onComplete: (event) => {
+      console.log("Upload completed:", event);
+      // event.type: 'complete'
+      // event.response: Server response
+      // event.timestamp: Completion time
+      // event.file: File metadata
+    },
+
+    onError: (event) => {
+      console.error("Upload failed:", event);
+      // event.type: 'error' | 'abort'
+      // event.error: Error object
+      // event.timestamp: Error time
+      // event.status?: HTTP status code (if applicable)
+    },
+  });
 } catch (error) {
-  if (error.message === "Upload aborted") {
-    console.log("Upload was cancelled");
-  } else {
-    console.error("Upload failed:", error);
-  }
+  console.error("Upload failed:", error);
 }
 
 // To cancel the upload:
 controller.abort();
 ```
 
-### Upload with All Options
-
-```javascript
-const controller = new AbortController();
-
-const result = await storage.files.upload(signedUrl, file, {
-  signal: controller.signal, // For cancellation
-
-  onStart: (event) => {
-    console.log("Upload started:", event);
-    // event.type: 'start'
-    // event.timestamp: Start time
-    // event.file: {
-    //   name: string,
-    //   size: number,
-    //   type: string
-    // }
-  },
-
-  onProgress: (event) => {
-    console.log(`Upload progress: ${event.progress}%`);
-    // event.type: 'progress'
-    // event.loaded: Bytes uploaded
-    // event.total: Total bytes
-    // event.progress: Percentage complete (0-100)
-  },
-
-  onComplete: (event) => {
-    console.log("Upload completed:", event);
-    // event.type: 'complete'
-    // event.response: Server response
-    // event.timestamp: Completion time
-  },
-
-  onError: (event) => {
-    console.error("Upload failed:", event);
-    // event.type: 'error' | 'abort'
-    // event.error: Error object
-    // event.timestamp: Error time
-    // event.status?: HTTP status code (if applicable)
-    // event.originalEvent?: Original XHR event (if applicable)
-  },
-});
-```
-
-### Multiple File Upload with Cancel
-
-```javascript
-const fileInput = document.querySelector('input[type="file"]');
-const files = Array.from(fileInput.files);
-
-// Create an AbortController for each file
-const controllers = files.map(() => new AbortController());
-
-const uploadPromises = files.map((file, index) =>
-  storage.files.upload(signedUrl, file, {
-    signal: controllers[index].signal,
-    onProgress: (event) => {
-      updateProgressBar(file.name, event.progress);
-    },
-  })
-);
-
-// Cancel specific upload
-controllers[0].abort(); // Cancels first file upload
-
-// Cancel all uploads
-controllers.forEach((controller) => controller.abort());
-```
-
-## Error Handling
-
-The SDK provides detailed error information through the onError callback, including upload cancellations:
+### Multipart Upload
 
 ```javascript
 const controller = new AbortController();
 
 try {
-  await storage.files.upload(signedUrl, file, {
+  const result = await storage.files.uploadMultipart(file, getSignedUrl, {
     signal: controller.signal,
+    partSize: 5 * 1024 * 1024, // 5MB chunks (optional)
+    concurrency: 3, // Number of concurrent uploads (optional)
+
+    onProgress: (event) => {
+      console.log(`Total progress: ${event.progress}%`);
+      console.log(
+        `Part ${event.part.number} progress: ${event.part.progress}%`
+      );
+      // event.loaded: Total bytes uploaded
+      // event.total: Total file size
+      // event.progress: Overall percentage
+      // event.part: {
+      //   number: Current part number
+      //   progress: Current part progress (0-100)
+      // }
+    },
+
+    onPartComplete: (part) => {
+      console.log("Part completed:", part);
+      // part.ETag: Part ETag from server
+      // part.PartNumber: Completed part number
+    },
+
+    onComplete: (event) => {
+      console.log("Upload completed:", event);
+      // event.type: 'complete'
+      // event.response: Server response
+      // event.timestamp: Completion time
+      // event.file: File metadata
+    },
+
+    onError: (event) => {
+      console.error("Upload error:", event);
+      // event.type: 'error' | 'abort'
+      // event.error: Error object
+      // event.phase: 'start' | 'upload' | 'complete' | 'cancel'
+      // event.status?: HTTP status code (if applicable)
+      // event.timestamp: Error time
+    },
+  });
+} catch (error) {
+  console.error("Upload failed:", error);
+}
+```
+
+### Error Handling
+
+The SDK provides detailed error information through the onError callback:
+
+```javascript
+try {
+  await storage.files.upload(file, getSignedUrl, {
     onError: (event) => {
       if (event.type === "abort") {
         console.log("Upload was cancelled");
@@ -140,84 +203,50 @@ try {
         if (event.status) {
           console.error("HTTP Status:", event.status);
         }
+        if (event.phase) {
+          // For multipart uploads
+          console.error("Failed during phase:", event.phase);
+        }
       }
     },
   });
 } catch (error) {
   console.error("Upload failed:", error.message);
 }
-
-// Later, to cancel the upload:
-controller.abort();
 ```
+
+### Multipart Upload Phases
+
+The multipart upload process includes different phases where errors might occur:
+
+| Phase    | Description                                   |
+| -------- | --------------------------------------------- |
+| start    | During the initialization of multipart upload |
+| upload   | During the upload of individual parts         |
+| complete | During the completion of multipart upload     |
+| cancel   | During attempt to cancel a failed upload      |
 
 ## Best Practices
 
 1. **Error Handling**
 
-   - Always implement error handling using try-catch and/or onError callback
+   - Always implement error handling using try-catch and onError callback
    - Handle both upload failures and aborted uploads
-   - Provide user feedback for upload status
+   - Check error phases for multipart uploads
 
 2. **Progress Updates**
 
    - Use onProgress for real-time upload progress
+   - For multipart uploads, track both overall and part-specific progress
    - Consider debouncing progress updates for better UI performance
-   - Handle cases where progress might not be computable
 
-3. **Multiple Files**
+3. **Signed URLs**
 
-   - Consider implementing a queue for multiple file uploads
-   - Track individual file progress separately
-   - Provide aggregate progress for overall upload status
+   - Implement secure server-side signed URL generation
+   - Cache signed URLs when appropriate
+   - Handle URL expiration gracefully
 
 4. **Upload Cancellation**
    - Create a new AbortController for each upload
-   - Store controller references for multiple file uploads
    - Clean up controllers when component unmounts
    - Handle cancellation events appropriately
-
-```javascript
-// React component example
-function UploadComponent() {
-  const controller = useRef(new AbortController());
-
-  useEffect(() => {
-    return () => {
-      // Cancel ongoing upload when component unmounts
-      controller.current.abort();
-    };
-  }, []);
-
-  const handleUpload = async (file) => {
-    try {
-      await storage.files.upload(signedUrl, file, {
-        signal: controller.current.signal,
-        onError: (event) => {
-          if (event.type === "abort") {
-            console.log("Upload was cancelled");
-          }
-        },
-      });
-    } catch (error) {
-      if (error.message === 'Upload aborted') {
-        console.log('Upload cancelled');
-      }
-    }
-  };
-
-  const handleCancel = () => {
-    controller.current.abort();
-  };
-
-  return (
-    // ... component JSX
-  );
-}
-```
-
-## Configuration Options
-
-| Option  | Type   | Required | Default                    | Description  |
-| ------- | ------ | -------- | -------------------------- | ------------ |
-| baseUrl | string | No       | https://api.apexxcloud.com | API base URL |

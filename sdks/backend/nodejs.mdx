@@ -36,25 +36,14 @@ const storage = new ApexxCloud({
 
 ```javascript
 // Simple upload
-const result = await storage.files.upload(
-  "bucket-name", // optional if default bucket set
-  "./path/to/file.jpg", // file path
-  {
-    visibility: "public", // optional, defaults to 'public'
-    region: "us-east-1", // optional, overrides default region
-  }
-);
 
-// Upload with progress tracking
-const result = await storage.files.upload(
-  "bucket-name",
-  "./path/to/large-file.zip",
-  {
-    onProgress: (progress) => {
-      console.log(`Upload progress: ${progress}%`);
-    },
-  }
-);
+const fileData = fs.readFileSync("./local-file.jpg");
+const result = await storage.files.upload(fileData, {
+  key: "path/to/file.jpg", // required - path/name in bucket
+  bucketName: "bucket-name", // optional if default bucket set
+  visibility: "public", // optional, defaults to 'public'
+  region: "us-east-1", // optional, overrides default region
+});
 ```
 
 ### Delete a File
@@ -62,25 +51,111 @@ const result = await storage.files.upload(
 ```javascript
 await storage.files.delete(
   "bucket-name", // optional if default bucket set
-  "path/to/file.jpg" // file path in bucket
+  "path/to/file.jpg" // file key in bucket
 );
 ```
 
-### Get a Signed URL
+### Get a Signed URL for Download
 
 ```javascript
 const url = await storage.files.getSignedUrl(
   "bucket-name", // optional if default bucket set
-  "path/to/file.jpg", // file path in bucket
+  "path/to/file.jpg", // file key in bucket
   {
+    type: "download",
     expiresIn: 3600, // optional, defaults to 1 hour (in seconds)
   }
 );
 ```
 
-## Multipart Upload
+### Generate Pre-Signed URLs for Operations
 
-For large files, use multipart upload to split the upload into smaller chunks:
+```javascript
+// Generate pre-signed URL for upload
+const uploadUrl = await storage.getSignedUrl(
+  "bucket-name",
+  "path/to/file.jpg",
+  {
+    type: "upload",
+    visibility: "public", // optional
+  }
+);
+
+// Generate pre-signed URL for delete
+const deleteUrl = await storage.getSignedUrl(
+  "bucket-name",
+  "path/to/file.jpg",
+  {
+    type: "delete",
+  }
+);
+
+// Generate pre-signed URL for download
+const downloadUrl = await storage.getSignedUrl(
+  "bucket-name",
+  "path/to/file.jpg",
+  {
+    type: "download",
+    expiresIn: 3600, // optional, defaults to 1 hour
+  }
+);
+
+// Generate pre-signed URL for starting multipart upload
+const startMultipartUrl = await storage.getSignedUrl(
+  "bucket-name",
+  "large-file.zip",
+  {
+    type: "start-multipart",
+    totalParts: 3, // required
+    mimeType: "application/zip", // required
+    visibility: "public", // optional
+  }
+);
+
+// Generate pre-signed URL for uploading a part
+const uploadPartUrl = await storage.getSignedUrl(
+  "bucket-name",
+  "large-file.zip",
+  {
+    type: "uploadpart",
+    uploadId: "upload-id", // required
+    partNumber: 1, // required
+    totalParts: 3, // required
+  }
+);
+
+// Generate pre-signed URL for completing multipart upload
+const completeMultipartUrl = await storage.getSignedUrl(
+  "bucket-name",
+  "large-file.zip",
+  {
+    type: "completemultipart",
+    uploadId: "upload-id", // required
+  }
+);
+
+// Generate pre-signed URL for canceling multipart upload
+const cancelMultipartUrl = await storage.getSignedUrl(
+  "bucket-name",
+  "large-file.zip",
+  {
+    type: "cancelmultipart",
+    uploadId: "upload-id", // required
+  }
+);
+```
+
+Available operation types:
+
+- `upload`: Create new file
+- `delete`: Delete existing file
+- `download`: Download file
+- `start-multipart`: Initialize multipart upload
+- `uploadpart`: Upload individual part
+- `completemultipart`: Complete multipart upload
+- `cancelmultipart`: Cancel multipart upload
+
+## Multipart Upload
 
 ```javascript
 // 1. Start the multipart upload
@@ -88,9 +163,9 @@ const upload = await storage.files.startMultipartUpload(
   "bucket-name",
   "large-file.zip",
   {
-    totalParts: 3,
-    mimeType: "application/zip",
-    visibility: "public",
+    totalParts: 3, // required
+    mimeType: "application/zip", // required
+    visibility: "public", // optional
   }
 );
 
@@ -101,9 +176,9 @@ for (let partNumber = 1; partNumber <= 3; partNumber++) {
     partNumber,
     filePartBuffer,
     {
-      bucketName: "bucket-name",
-      key: upload.key,
-      totalParts: 3,
+      key: "large-file.zip", // required
+      bucketName: "bucket-name", // optional if default bucket set
+      totalParts: 3, // required
     }
   );
   parts.push(partResult);
@@ -111,8 +186,8 @@ for (let partNumber = 1; partNumber <= 3; partNumber++) {
 
 // 3. Complete the multipart upload
 await storage.files.completeMultipartUpload(upload.uploadId, parts, {
-  bucketName: "bucket-name",
-  key: "large-file.zip",
+  key: "large-file.zip", // required
+  bucketName: "bucket-name", // optional if default bucket set
 });
 ```
 
@@ -148,40 +223,8 @@ The SDK uses a consistent error handling pattern:
 try {
   await storage.files.upload("bucket-name", "./file.jpg");
 } catch (error) {
-  if (error.code === "FILE_NOT_FOUND") {
-    console.error("The specified file does not exist");
-  } else if (error.code === "BUCKET_NOT_FOUND") {
-    console.error("The specified bucket does not exist");
-  } else {
-    console.error("An unexpected error occurred:", error.message);
-  }
+  console.error("Upload failed:", error);
 }
-```
-
-## TypeScript Support
-
-The SDK includes TypeScript definitions. Here's an example using TypeScript:
-
-```typescript
-import { ApexxCloud, UploadOptions, BucketConfig } from "@apexxcloud/sdk-node";
-
-interface CustomConfig extends BucketConfig {
-  customField?: string;
-}
-
-const config: CustomConfig = {
-  accessKey: "your-access-key",
-  secretKey: "your-secret-key",
-  region: "APAC",
-  bucket: "default-bucket",
-};
-
-const storage = new ApexxCloud(config);
-
-const uploadOptions: UploadOptions = {
-  visibility: "public",
-  onProgress: (progress: number) => console.log(`Progress: ${progress}%`),
-};
 ```
 
 ## Best Practices
@@ -198,13 +241,7 @@ const uploadOptions: UploadOptions = {
    - Implement retry logic for failed part uploads
    - Monitor upload progress
 
-3. **Performance**
-
-   - Reuse SDK instances
-   - Use appropriate chunk sizes for multipart uploads
-   - Implement proper cleanup for cancelled uploads
-
-4. **Security**
-   - Never expose your access and secret keys in client-side code
+3. **Security**
+   - Never expose your secret key in client-side code
    - Use appropriate file visibility settings
    - Set reasonable expiration times for signed URLs
