@@ -1,0 +1,141 @@
+# Video Cropping Transformations
+
+## Crop Modes
+
+Control how your video is cropped using the `c_{mode}` parameter. Each mode handles dimensions differently:
+
+### `crop` - Exact Dimensions
+
+Crops the video to exactly match the specified dimensions, removing excess pixels.
+
+```
+tr-w_500,h_300,c_crop
+```
+
+- Best for: Fixed-size video players where exact dimensions are required
+- Behavior: May remove parts of the video to achieve exact size
+- Example use: Social media videos, video thumbnails
+
+### `fill` - Resize and Crop
+
+Resizes the video to fill the specified dimensions while maintaining aspect ratio, then crops excess pixels.
+
+```
+tr-w_800,h_600,c_fill
+```
+
+- Best for: Hero videos, featured content
+- Behavior: Ensures entire space is filled without distortion
+- Example use: Website headers, video backgrounds
+
+### `fit` - Preserve Content
+
+Resizes video to fit within specified dimensions while maintaining aspect ratio, with no cropping.
+
+```
+tr-w_400,h_300,c_fit
+```
+
+- Best for: Product videos, instructional content
+- Behavior: May leave empty space on sides or top/bottom
+- Example use: Video galleries, educational content
+
+### `scale` - Simple Resize
+
+Basic resize that may change aspect ratio to match exact dimensions.
+
+```
+tr-w_500,h_300,c_scale
+```
+
+- Best for: When aspect ratio isn't critical
+- Behavior: May stretch or compress video
+- Example use: Background videos, non-critical content
+
+### `limit` - Downscale Only
+
+Only scales down videos that are larger than specified dimensions.
+
+```
+tr-w_800,h_600,c_limit
+```
+
+- Best for: User-uploaded content
+- Behavior: Never enlarges small videos
+- Example use: Forum attachments, user galleries
+
+### `pad` - Add Padding
+
+Resizes within dimensions and adds padding to reach exact size.
+
+```
+tr-w_400,h_400,c_pad,b_000000
+```
+
+- Best for: Consistent layouts requiring exact dimensions
+- Behavior: Adds padding to maintain aspect ratio
+- Example use: Video grids, multi-video layouts
+- Supports background options (solid color or blur)
+
+## Gravity Control
+
+Use `g_{position}` to control the focal point during cropping. Only works with `crop` and `fill` modes:
+
+### Standard Positions
+
+```
+tr-c_crop,g_center        # Default
+tr-c_crop,g_north        # Top center
+tr-c_crop,g_south        # Bottom center
+tr-c_crop,g_east         # Right center
+tr-c_crop,g_west         # Left center
+tr-c_crop,g_north_east   # Top right
+tr-c_crop,g_north_west   # Top left
+tr-c_crop,g_south_east   # Bottom right
+tr-c_crop,g_south_west   # Bottom left
+```
+
+## Background Options
+
+When using `pad` mode, control the padding appearance:
+
+### Solid Color Background
+
+```
+tr-c_pad,b_000000    # Black background
+tr-c_pad,b_FFFFFF    # White background
+tr-c_pad,b_FF0000    # Red background
+```
+
+### Blurred Background
+
+```
+tr-c_pad,b_blur      # Blurred edges from video content
+```
+
+## Best Practices
+
+### Choosing the Right Mode
+
+- Use `crop` when exact dimensions are required
+- Use `fill` for hero videos and featured content
+- Use `fit` for product videos and instructional content
+- Use `pad` for consistent layouts with aspect ratio preservation
+- Use `limit` for user uploads
+- Avoid `scale` unless aspect ratio distortion is acceptable
+
+### Gravity Tips
+
+- Test different gravity settings with various video types
+- Consider content placement when choosing gravity
+- Remember gravity only works with `crop` and `fill` modes
+- Use center gravity for general-purpose cropping
+- Consider the subject's movement throughout the video
+
+### Optimization
+
+- Combine with format settings for better performance
+- Use appropriate dimensions for playback device
+- Consider responsive video techniques
+- Test crops across different video types and lengths
+- Consider the entire duration of the video when choosing crop settings

@@ -1,0 +1,62 @@
+# Video Thumbnail Transformations
+
+Generate thumbnails from your videos using our transformation parameters.
+
+## Basic Usage
+
+### Timestamp Selection
+
+Generate a thumbnail at a specific timestamp:
+
+```
+thumb-so_5.0
+```
+
+The `so` (seek offset) parameter specifies the timestamp in seconds. Default 5.0.
+
+## Combining with Image Transformations
+
+Thumbnail generation can be combined with other image transformations:
+
+```
+thumb-so_10.0,w_300,h_200,c_fill
+```
+
+<Note>
+  Thumbnails support all image transformation parameters. Refer to the [Image
+  Transformations](/transformations/image/introduction) documentation for the
+  complete list of available parameters.
+</Note>
+
+## Examples
+
+### Basic Thumbnail
+
+```
+thumb-so_5.0
+```
+
+### Thumbnail with Resize
+
+```
+thumb-so_15.0,w_1280,h_720
+```
+
+### Thumbnail with Crop and Effects
+
+```
+thumb-so_30.0,w_500,h_500,c_fill,g_center,blur_5
+```
+
+### Mobile-Optimized Thumbnail
+
+```
+thumb-so_5.0,w_720,h_1280,c_fit
+```
+
+## Best Practices
+
+- Choose meaningful timestamps for preview images
+- Consider using multiple thumbnails for video previews
+- Optimize thumbnail dimensions for your use case
+- Combine with other transformations for perfect results

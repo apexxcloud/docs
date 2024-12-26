@@ -1,0 +1,68 @@
+# Document Transformations
+
+Transform your documents on-the-fly using our powerful transformation system. This guide explains how to use transformations to convert, compress, and generate thumbnails from your documents.
+
+## URL Format
+
+Transformations are applied by adding them to the URL:
+
+```
+https://cdn.apexxcloud.com/f/{access_id}/{transformations}/path
+```
+
+For example:
+
+```
+https://cdn.apexxcloud.com/f/abc123/tr-f_pdf,q_auto:standard/documents/contract.docx
+```
+
+## Basic Format
+
+Transformations follow a simple, consistent pattern:
+
+```
+tr-{parameter_name}_{value}
+```
+
+### Combining Transformations
+
+Multiple parameters can be combined using commas:
+
+```
+tr-f_pdf,q_auto:standard
+```
+
+## Transformation Categories
+
+Our document transformation system is organized into two main categories:
+
+1. **[Format & Compression](/transformations/document/format-and-compression)** - Control document format and quality
+
+   - Format conversion (PDF, DOCX, XLSX, PPTX)
+   - Quality settings
+   - Compression controls
+   - Page selection
+
+2. **[Thumbnails](/transformations/document/thumbnails)** - Generate document previews
+   - Thumbnail generation
+   - Size control
+   - Format options
+   - Page selection
+
+## Supported Formats
+
+### Input Formats
+
+- PDF (Portable Document Format)
+- DOCX (Microsoft Word)
+- XLSX (Microsoft Excel)
+- PPTX (Microsoft PowerPoint)
+
+### Output Formats
+
+- Original format (maintain source format)
+- PDF (Primary output format)
+- DOCX (Microsoft Word)
+- XLSX (Microsoft Excel)
+- PPTX (Microsoft PowerPoint)
+- Image formats for thumbnails (JPG, PNG, WebP, AVIF)

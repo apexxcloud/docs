@@ -1,0 +1,65 @@
+# Video Filter Transformations
+
+## Visual Effects
+
+### Background Color (`b_{color}`)
+
+Set background color for padded areas or transparent videos:
+
+```
+tr-b_ff0000         # Red background
+tr-b_000000        # Black background
+tr-b_ffffff        # White background
+```
+
+- Accepts hex color codes without '#'
+- Commonly used with:
+  - `c_pad` crop mode
+  - Videos with transparent areas
+  - Letterboxing/pillarboxing areas
+
+### Blur Effect (`blur_{radius}`)
+
+Apply Gaussian blur effect to video:
+
+```
+tr-blur_10            # Light blur
+tr-blur_50            # Medium blur
+tr-blur_100           # Heavy blur
+```
+
+Features:
+
+- Radius range: 1-100
+- Lower values for subtle effect
+- Higher values for strong blur
+- Applied consistently across frames
+
+Common uses:
+
+- Background videos
+- Privacy protection
+- Aesthetic effects
+- Content warnings
+
+### Background Blur (`b_blur`)
+
+Create blurred padding from video content:
+
+```
+tr-c_pad,b_blur       # Blurred edges from video content
+```
+
+Features:
+
+- Uses video content for blur effect
+- Maintains visual consistency
+- Works with padding operations
+- Smoother than solid colors
+
+Best practices:
+
+- Use with `c_pad` mode
+- Consider video content edges
+- Test with different aspect ratios
+- Verify across video duration

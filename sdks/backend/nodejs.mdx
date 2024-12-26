@@ -1,0 +1,210 @@
+---
+title: "Node.js SDK"
+description: "Documentation for ApexxCloud Node.js SDK"
+---
+
+## Installation
+
+<CodeGroup>
+
+```bash npm
+npm install @apexxcloud/sdk-node
+```
+
+```bash yarn
+yarn add @apexxcloud/sdk-node
+```
+
+</CodeGroup>
+
+## Initialization
+
+```javascript
+const ApexxCloud = require("@apexxcloud/sdk-node");
+
+const storage = new ApexxCloud({
+  accessKey: "your-access-key",
+  secretKey: "your-secret-key",
+  region: "bucket-region",
+  bucket: "bucket-name",
+});
+```
+
+## File Operations
+
+### Upload a File
+
+```javascript
+// Simple upload
+const result = await storage.files.upload(
+  "bucket-name", // optional if default bucket set
+  "./path/to/file.jpg", // file path
+  {
+    visibility: "public", // optional, defaults to 'public'
+    region: "us-east-1", // optional, overrides default region
+  }
+);
+
+// Upload with progress tracking
+const result = await storage.files.upload(
+  "bucket-name",
+  "./path/to/large-file.zip",
+  {
+    onProgress: (progress) => {
+      console.log(`Upload progress: ${progress}%`);
+    },
+  }
+);
+```
+
+### Delete a File
+
+```javascript
+await storage.files.delete(
+  "bucket-name", // optional if default bucket set
+  "path/to/file.jpg" // file path in bucket
+);
+```
+
+### Get a Signed URL
+
+```javascript
+const url = await storage.files.getSignedUrl(
+  "bucket-name", // optional if default bucket set
+  "path/to/file.jpg", // file path in bucket
+  {
+    expiresIn: 3600, // optional, defaults to 1 hour (in seconds)
+  }
+);
+```
+
+## Multipart Upload
+
+For large files, use multipart upload to split the upload into smaller chunks:
+
+```javascript
+// 1. Start the multipart upload
+const upload = await storage.files.startMultipartUpload(
+  "bucket-name",
+  "large-file.zip",
+  {
+    totalParts: 3,
+    mimeType: "application/zip",
+    visibility: "public",
+  }
+);
+
+// 2. Upload individual parts
+for (let partNumber = 1; partNumber <= 3; partNumber++) {
+  const partResult = await storage.files.uploadPart(
+    upload.uploadId,
+    partNumber,
+    filePartBuffer,
+    {
+      bucketName: "bucket-name",
+      key: upload.key,
+      totalParts: 3,
+    }
+  );
+  parts.push(partResult);
+}
+
+// 3. Complete the multipart upload
+await storage.files.completeMultipartUpload(upload.uploadId, parts, {
+  bucketName: "bucket-name",
+  key: "large-file.zip",
+});
+```
+
+If you need to cancel the upload:
+
+```javascript
+await storage.files.cancelMultipartUpload(uploadId, {
+  bucketName: "bucket-name",
+  key: "file-key",
+});
+```
+
+## Bucket Operations
+
+### List Bucket Contents
+
+```javascript
+const contents = await storage.bucket.listContents(
+  "bucket-name", // optional if default bucket set
+  {
+    prefix: "folder/", // optional, filter by prefix
+    page: 1, // optional, defaults to 1
+    limit: 20, // optional, defaults to 20
+  }
+);
+```
+
+## Error Handling
+
+The SDK uses a consistent error handling pattern:
+
+```javascript
+try {
+  await storage.files.upload("bucket-name", "./file.jpg");
+} catch (error) {
+  if (error.code === "FILE_NOT_FOUND") {
+    console.error("The specified file does not exist");
+  } else if (error.code === "BUCKET_NOT_FOUND") {
+    console.error("The specified bucket does not exist");
+  } else {
+    console.error("An unexpected error occurred:", error.message);
+  }
+}
+```
+
+## TypeScript Support
+
+The SDK includes TypeScript definitions. Here's an example using TypeScript:
+
+```typescript
+import { ApexxCloud, UploadOptions, BucketConfig } from "@apexxcloud/sdk-node";
+
+interface CustomConfig extends BucketConfig {
+  customField?: string;
+}
+
+const config: CustomConfig = {
+  accessKey: "your-access-key",
+  secretKey: "your-secret-key",
+  region: "APAC",
+  bucket: "default-bucket",
+};
+
+const storage = new ApexxCloud(config);
+
+const uploadOptions: UploadOptions = {
+  visibility: "public",
+  onProgress: (progress: number) => console.log(`Progress: ${progress}%`),
+};
+```
+
+## Best Practices
+
+1. **Error Handling**
+
+   - Always wrap SDK operations in try-catch blocks
+   - Handle specific error codes appropriately
+   - Log errors for debugging
+
+2. **Large Files**
+
+   - Use multipart upload for files larger than 100MB
+   - Implement retry logic for failed part uploads
+   - Monitor upload progress
+
+3. **Performance**
+
+   - Reuse SDK instances
+   - Use appropriate chunk sizes for multipart uploads
+   - Implement proper cleanup for cancelled uploads
+
+4. **Security**
+   - Never expose your access and secret keys in client-side code
+   - Use appropriate file visibility settings
+   - Set reasonable expiration times for signed URLs

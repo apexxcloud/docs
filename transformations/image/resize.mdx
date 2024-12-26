@@ -1,0 +1,70 @@
+# Image Resizing Transformations
+
+## Dimensions and Scaling
+
+### Width and Height
+
+Set specific dimensions for your image using width and height parameters:
+
+```
+tr-w_300,h_200
+```
+
+- **Width**: `w_{pixels}` - Sets image width in pixels
+- **Height**: `h_{pixels}` - Sets image height in pixels
+
+### Advanced Scaling Options
+
+#### Aspect Ratio
+
+Maintain a specific aspect ratio while resizing:
+
+```
+tr-ar_1.5
+```
+
+#### Device Pixel Ratio (DPR)
+
+Adjust dimensions for high-density displays:
+
+```
+tr-dpr_2
+```
+
+- Accepts values between 1.0 and 5.0
+- Useful for retina displays
+
+#### Zoom
+
+Apply a zoom factor to the dimensions:
+
+```
+tr-z_1.5
+```
+
+## Best Practices
+
+- Specify both width and height for predictable results
+- Use DPR for responsive images
+- Consider aspect ratio when resizing to prevent distortion
+- Chain with other transformations: `tr-w_500,h_300+e_grayscale`
+
+## Examples
+
+### Responsive Image
+
+```
+tr-w_800,dpr_2
+```
+
+### Thumbnail Creation
+
+```
+tr-w_200,h_200,ar_1
+```
+
+### Mobile-Optimized Image
+
+```
+tr-w_400,dpr_2,z_1.2
+```

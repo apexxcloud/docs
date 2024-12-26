@@ -1,0 +1,164 @@
+# Image Optimization Transformations
+
+## Output Format
+
+Control the output format using `f_{format}`. Each format has specific use cases and benefits:
+
+### Auto Format (`f_auto`)
+
+Automatically selects the best format based on browser support:
+
+```
+tr-f_auto
+```
+
+Features:
+
+- Delivers AVIF to supported browsers
+- Falls back to WebP when AVIF isn't supported
+- Uses JPEG/PNG for legacy browsers
+- Optimal format selection per request
+
+Best for:
+
+- Maximum compatibility
+- Optimal performance
+- No need for manual format selection
+- Progressive enhancement
+
+### AVIF (`f_avif`)
+
+Next-generation format with superior compression:
+
+```
+tr-f_avif
+```
+
+Features:
+
+- Best-in-class compression
+- Excellent quality preservation
+- Full color depth support
+- HDR and wide color gamut support
+- Alpha transparency
+
+Best for:
+
+- Maximum compression needs
+- High-quality images
+- Modern web applications
+- When quality and size both matter
+- Progressive web apps
+
+### WebP (`f_webp`)
+
+Modern format offering excellent compression:
+
+```
+tr-f_webp
+```
+
+Features:
+
+- Great compression ratios
+- Supports transparency
+- Excellent quality-to-size ratio
+- Progressive loading support
+
+Best for:
+
+- Modern web applications
+- Performance-critical sites
+- Mobile-first designs
+- Wider browser support than AVIF
+
+### JPEG (`f_jpeg`)
+
+Standard format with wide compatibility:
+
+```
+tr-f_jpeg
+```
+
+Features:
+
+- Universal browser support
+- Good compression for photographs
+- No transparency support
+- Smaller file sizes than PNG
+
+Best for:
+
+- Photographs
+- Legacy system compatibility
+- When transparency isn't needed
+- High-color images
+
+### PNG (`f_png`)
+
+Lossless format with transparency support:
+
+```
+tr-f_png
+```
+
+Features:
+
+- Lossless quality
+- Full transparency support
+- Better for text and graphics
+- Larger file sizes
+
+Best for:
+
+- Images with text
+- Logos and icons
+- Screenshots
+- When quality is critical
+
+## Quality Control
+
+Adjust compression quality using `q_{value}`:
+
+### Numeric Quality
+
+Direct control over compression level:
+
+```
+tr-q_100    # Maximum quality
+tr-q_80     # High quality
+tr-q_60     # Medium quality
+tr-q_40     # Low quality
+```
+
+Features:
+
+- Range: 1-100
+- Higher values = better quality
+- Lower values = smaller files
+- Direct control over output
+
+### Auto Quality Modes
+
+Intelligent quality optimization:
+
+```
+tr-q_auto:best    # 92 - Maximum visual quality
+tr-q_auto:good    # 85 - Balanced quality
+tr-q_auto:eco     # 75 - Efficient compression
+tr-q_auto:low     # 60 - Maximum compression
+```
+
+Features:
+
+- Automatic optimization
+- Content-aware compression
+- Consistent visual quality
+- Optimal file size
+
+Best practices:
+
+- Use `auto:good` for general purpose
+- Use `auto:best` for professional photos
+- Use `auto:eco` for background images
+- Use `auto:low` for thumbnails

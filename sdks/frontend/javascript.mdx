@@ -1,0 +1,223 @@
+---
+title: "JavaScript SDK"
+description: "Documentation for ApexxCloud JavaScript SDK"
+---
+
+## Installation
+
+<CodeGroup>
+
+```bash npm
+npm install @apexxcloud/sdk-js
+```
+
+```bash yarn
+yarn add @apexxcloud/sdk-js
+```
+
+</CodeGroup>
+
+## Initialization
+
+```javascript
+import ApexxCloud from "@apexxcloud/sdk-js";
+
+const storage = new ApexxCloud({
+  baseUrl: "https://api.apexxcloud.com", // optional
+});
+```
+
+## File Upload
+
+### Basic Upload with Cancel Support
+
+```javascript
+// Create an AbortController
+const controller = new AbortController();
+
+try {
+  const result = await storage.files.upload(signedUrl, file, {
+    signal: controller.signal, // Pass the abort signal
+  });
+  console.log("Upload successful:", result);
+} catch (error) {
+  if (error.message === "Upload aborted") {
+    console.log("Upload was cancelled");
+  } else {
+    console.error("Upload failed:", error);
+  }
+}
+
+// To cancel the upload:
+controller.abort();
+```
+
+### Upload with All Options
+
+```javascript
+const controller = new AbortController();
+
+const result = await storage.files.upload(signedUrl, file, {
+  signal: controller.signal, // For cancellation
+
+  onStart: (event) => {
+    console.log("Upload started:", event);
+    // event.type: 'start'
+    // event.timestamp: Start time
+    // event.file: {
+    //   name: string,
+    //   size: number,
+    //   type: string
+    // }
+  },
+
+  onProgress: (event) => {
+    console.log(`Upload progress: ${event.progress}%`);
+    // event.type: 'progress'
+    // event.loaded: Bytes uploaded
+    // event.total: Total bytes
+    // event.progress: Percentage complete (0-100)
+  },
+
+  onComplete: (event) => {
+    console.log("Upload completed:", event);
+    // event.type: 'complete'
+    // event.response: Server response
+    // event.timestamp: Completion time
+  },
+
+  onError: (event) => {
+    console.error("Upload failed:", event);
+    // event.type: 'error' | 'abort'
+    // event.error: Error object
+    // event.timestamp: Error time
+    // event.status?: HTTP status code (if applicable)
+    // event.originalEvent?: Original XHR event (if applicable)
+  },
+});
+```
+
+### Multiple File Upload with Cancel
+
+```javascript
+const fileInput = document.querySelector('input[type="file"]');
+const files = Array.from(fileInput.files);
+
+// Create an AbortController for each file
+const controllers = files.map(() => new AbortController());
+
+const uploadPromises = files.map((file, index) =>
+  storage.files.upload(signedUrl, file, {
+    signal: controllers[index].signal,
+    onProgress: (event) => {
+      updateProgressBar(file.name, event.progress);
+    },
+  })
+);
+
+// Cancel specific upload
+controllers[0].abort(); // Cancels first file upload
+
+// Cancel all uploads
+controllers.forEach((controller) => controller.abort());
+```
+
+## Error Handling
+
+The SDK provides detailed error information through the onError callback, including upload cancellations:
+
+```javascript
+const controller = new AbortController();
+
+try {
+  await storage.files.upload(signedUrl, file, {
+    signal: controller.signal,
+    onError: (event) => {
+      if (event.type === "abort") {
+        console.log("Upload was cancelled");
+      } else {
+        console.error("Upload failed:", event.error.message);
+        if (event.status) {
+          console.error("HTTP Status:", event.status);
+        }
+      }
+    },
+  });
+} catch (error) {
+  console.error("Upload failed:", error.message);
+}
+
+// Later, to cancel the upload:
+controller.abort();
+```
+
+## Best Practices
+
+1. **Error Handling**
+
+   - Always implement error handling using try-catch and/or onError callback
+   - Handle both upload failures and aborted uploads
+   - Provide user feedback for upload status
+
+2. **Progress Updates**
+
+   - Use onProgress for real-time upload progress
+   - Consider debouncing progress updates for better UI performance
+   - Handle cases where progress might not be computable
+
+3. **Multiple Files**
+
+   - Consider implementing a queue for multiple file uploads
+   - Track individual file progress separately
+   - Provide aggregate progress for overall upload status
+
+4. **Upload Cancellation**
+   - Create a new AbortController for each upload
+   - Store controller references for multiple file uploads
+   - Clean up controllers when component unmounts
+   - Handle cancellation events appropriately
+
+```javascript
+// React component example
+function UploadComponent() {
+  const controller = useRef(new AbortController());
+
+  useEffect(() => {
+    return () => {
+      // Cancel ongoing upload when component unmounts
+      controller.current.abort();
+    };
+  }, []);
+
+  const handleUpload = async (file) => {
+    try {
+      await storage.files.upload(signedUrl, file, {
+        signal: controller.current.signal,
+        onError: (event) => {
+          if (event.type === "abort") {
+            console.log("Upload was cancelled");
+          }
+        },
+      });
+    } catch (error) {
+      if (error.message === 'Upload aborted') {
+        console.log('Upload cancelled');
+      }
+    }
+  };
+
+  const handleCancel = () => {
+    controller.current.abort();
+  };
+
+  return (
+    // ... component JSX
+  );
+}
+```
+
+## Configuration Options
+
+| Option  | Type   | Required | Default                    | Description  |
+| ------- | ------ | -------- | -------------------------- | ------------ |
+| baseUrl | string | No       | https://api.apexxcloud.com | API base URL |

@@ -1,0 +1,56 @@
+# Video Format Transformations
+
+Control video format, codec, and optimization settings using our transformation parameters.
+
+## Format Options
+
+### Basic Format Conversion
+
+Convert videos to different formats:
+
+```
+tr-f_webm
+```
+
+Available formats:
+
+- `mp4` (default) - H.264/AAC
+- `webm` - VP9/Vorbis
+- `mov` - H.264/AAC
+- `auto` - Server-selected optimal format
+
+## Codec Details
+
+### MP4/MOV
+
+- Video: H.264 (libx264)
+- Audio: AAC
+- Container: MP4/MOV
+
+### WebM
+
+- Video: VP9 (libvpx-vp9)
+- Audio: Vorbis
+- Container: WebM
+
+## Examples
+
+### Convert to WebM
+
+```
+tr-f_webm
+```
+
+### Resize and Convert
+
+```
+tr-w_1280,h_720,f_webm
+```
+
+### Format with Effects
+
+```
+tr-w_1280,h_720,blur_10,f_webm
+```
+
+Note: The format parameter should typically be the last in a transformation chain for optimal processing.

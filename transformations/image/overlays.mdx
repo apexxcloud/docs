@@ -1,0 +1,91 @@
+# Image Overlay Transformations
+
+Overlays allow you to add text or images on top of your base image. They're perfect for watermarks, branding, captions, and dynamic content composition.
+
+## Types of Overlays
+
+### Text Overlays
+
+Add text to your images using the `l_text` parameter with various styling options:
+
+```
+tr-l_text:Hello World:l_font_Arial:l_size_24:l_color_ffffff
+```
+
+#### Text Parameters
+
+- `l_font_{name}`: Font family (e.g., Arial, Helvetica)
+- `l_size_{pixels}`: Font size in pixels
+- `l_color_{hex}`: Text color in hex format
+- `l_gravity_{position}`: Text placement (see Positioning section)
+- `l_x_{pixels}`: X-axis offset from gravity position
+- `l_y_{pixels}`: Y-axis offset from gravity position
+- `l_o_{opacity}`: Text opacity (0-100)
+
+### Image Overlays
+
+Add images on top of your base image using the `l_image` parameter:
+
+```
+tr-l_image:logo@@brand@@watermark.png:l_gravity_southeast:l_o_50
+```
+
+> **Note**: Replace forward slashes (/) in image paths with `@@`
+> Example: `assets/brand/logo.png` becomes `assets@@brand@@logo.png`
+
+#### Image Overlay Parameters
+
+- `l_gravity_{position}`: Overlay placement
+- `l_x_{pixels}`: X-axis offset
+- `l_y_{pixels}`: Y-axis offset
+- `l_o_{opacity}`: Overlay opacity (0-100)
+- `l_scale_{factor}`: Scale factor (e.g., 0.5 for half size)
+- `l_width_{pixels}`: Specific width
+- `l_height_{pixels}`: Specific height
+- `l_ar_{ratio}`: Aspect ratio
+
+## Positioning (Gravity)
+
+Control overlay placement using the `l_gravity` parameter:
+
+### Standard Positions
+
+- `center` (default)
+- `north`, `south`, `east`, `west`
+- `north_east`, `north_west`, `south_east`, `south_west`
+
+### Fine-tuning
+
+Combine gravity with x/y offsets for precise positioning:
+
+```
+tr-l_text:Copyright:l_gravity_southeast:l_x_10:l_y_10
+```
+
+## Common Use Cases
+
+### 1. Watermarking
+
+```
+tr-w_800,h_600,c_fill+l_image:watermark.png:l_gravity_center:l_o_30
+```
+
+### 2. Social Media Templates
+
+```
+tr-w_1200,h_630,c_fill+l_text:Breaking News:l_font_Arial:l_size_48:l_color_ffffff:l_gravity_north:l_y_50
+```
+
+### 3. Product Labels
+
+```
+tr-w_500,h_500,c_fill+l_text:SALE:l_font_Arial:l_size_32:l_color_ff0000:l_gravity_northeast
+```
+
+### 4. Multiple Overlays
+
+Chain multiple overlays using plus signs:
+
+```
+tr-w_1000,h_1000+l_image:logo.png:l_gravity_northwest+l_text:Copyright 2024:l_gravity_southeast
+```

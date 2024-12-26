@@ -1,0 +1,152 @@
+# Image Filter Transformations
+
+## Visual Effects
+
+### Background Color (`b_{color}`)
+
+Set background color for transparent images or padded areas:
+
+```
+tr-b_ff0000         # Red background
+tr-b_000000        # Black background
+tr-b_ffffff        # White background
+tr-b_transparent   # Transparent background
+```
+
+- Accepts hex color codes without '#'
+- Use `transparent` for clear background
+- Commonly used with:
+  - `c_pad` crop mode
+  - PNG images with transparency
+  - Rounded corners that expose background
+
+### Border (`bo_{width_style_color}`)
+
+Add borders to images with specific width, style, and color:
+
+```
+tr-bo_5px_solid_000000    # 5px solid black border
+tr-bo_2px_dashed_ff0000   # 2px dashed red border
+tr-bo_3px_dotted_cccccc   # 3px dotted gray border
+```
+
+Parameters:
+
+- Width: Specified in pixels (e.g., `1px`, `5px`)
+- Style: `solid`, `dashed`, `dotted`
+- Color: Hex color code without '#'
+
+Best practices:
+
+- Use solid borders for clean, professional looks
+- Consider border color contrast with image
+- Keep border width proportional to image size
+
+### Corner Radius (`r_{pixels}`)
+
+Round image corners with flexible options:
+
+```
+tr-r_20                # All corners 20px
+tr-r_20:30:20:30      # Different radius for each corner (top-left:top-right:bottom-right:bottom-left)
+tr-r_max              # Create circular/elliptical image
+```
+
+Features:
+
+- Single value applies to all corners
+- Four values for individual corner control
+- Special `max` value for circular images
+- Combines well with borders and background colors
+
+Best practices:
+
+- Use consistent radius across your design
+- Consider `max` for profile pictures
+- Test with different image aspect ratios
+
+### Rotation (`a_{degrees}`)
+
+Rotate images by specific degrees:
+
+```
+tr-a_90               # Rotate 90 degrees clockwise
+tr-a_180              # Rotate 180 degrees
+tr-a_270              # Rotate 270 degrees clockwise (90 degrees counter-clockwise)
+```
+
+Features:
+
+- Accepts values from 0 to 360
+- Common values: 90, 180, 270
+- Maintains original image quality
+- May change effective dimensions
+
+### Opacity (`o_{percent}`)
+
+Adjust image transparency:
+
+```
+tr-o_50               # 50% opacity
+tr-o_75               # 75% opacity
+tr-o_25               # 25% opacity
+```
+
+Features:
+
+- Range: 0 (transparent) to 100 (opaque)
+- Useful for watermarks and overlays
+- Maintains image quality
+- Works with all image formats
+
+Best practices:
+
+- Use higher values (70-90) for main images
+- Use lower values (20-50) for watermarks
+- Consider background when using transparency
+
+### Blur (`blur_{radius}`)
+
+Apply Gaussian blur effect:
+
+```
+tr-blur_10            # Light blur
+tr-blur_50            # Medium blur
+tr-blur_100           # Heavy blur
+```
+
+Features:
+
+- Radius range: 1-100
+- Lower values for subtle effect
+- Higher values for strong blur
+- Maintains edge smoothness
+
+Common uses:
+
+- Background images
+- Privacy protection
+- Aesthetic effects
+- Loading placeholders
+
+### Grayscale (`e_grayscale`)
+
+Convert image to black and white:
+
+```
+tr-e_grayscale        # Convert to grayscale
+```
+
+Features:
+
+- Full grayscale conversion
+- Maintains image contrast
+- Works with all image formats
+- Can be combined with other effects
+
+Use cases:
+
+- Classic photo effect
+- Consistent visual style
+- Reducing visual complexity
+- Historical or vintage looks

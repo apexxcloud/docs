@@ -1,29 +1,30 @@
 {
   "$schema": "https://mintlify.com/schema.json",
-  "name": "Starter Kit",
+  "name": "Apexx Cloud",
   "logo": {
     "dark": "/logo/dark.svg",
     "light": "/logo/light.svg"
   },
   "favicon": "/favicon.svg",
   "colors": {
-    "primary": "#1E90FF",
-    "light": "#F0F8FF",
-    "dark": "#104E8B",
+    "primary": "#18181B",
+    "light": "#F4F4F5",
+    "dark": "#09090B",
     "anchors": {
-      "from": "#1E90FF",
-      "to": "#104E8B"
+      "from": "#18181B",
+      "to": "#F4F4F5"
     }
   },
+  "theme": "prism",
   "topbarLinks": [
     {
       "name": "Support",
-      "url": "mailto:hi@mintlify.com"
+      "url": "mailto:support@apexxcloud.com"
     }
   ],
   "topbarCtaButton": {
     "name": "Dashboard",
-    "url": "https://dashboard.mintlify.com"
+    "url": "https://dashboard.apexxcloud.com"
   },
   "tabs": [
     {
@@ -31,41 +32,77 @@
       "url": "api-reference"
     }
   ],
+ 
   "anchors": [
-    {
-      "name": "Documentation",
-      "icon": "book-open-cover",
-      "url": "https://mintlify.com/docs"
-    },
+   
     {
       "name": "Community",
-      "icon": "slack",
-      "url": "https://mintlify.com/community"
-    },
-    {
-      "name": "Blog",
-      "icon": "newspaper",
-      "url": "https://mintlify.com/blog"
+      "icon": "Discord",
+      "url": "https://discord.gg/G2gbCs8r"
     }
+  
   ],
   "navigation": [
     {
       "group": "Get Started",
       "pages": [
         "introduction",
-        "quickstart",
-        "development"
+        "quickstart"
+        
       ]
     },
     {
-      "group": "Essentials",
+      "group": "SDKs",
       "pages": [
-        "essentials/markdown",
-        "essentials/code",
-        "essentials/images",
-        "essentials/settings",
-        "essentials/navigation",
-        "essentials/reusable-snippets"
+        {
+          "group": "Backend",
+          "pages": [
+            "sdks/backend/nodejs"
+          ]
+        },
+        {
+          "group": "Frontend",
+          "pages": [
+            "sdks/frontend/javascript",
+            "sdks/frontend/react"
+          ]
+        }
+      ]
+    },
+    {
+      "group": "Transformations",
+      "pages": [
+        {
+          "group": "Image",
+          "pages": [
+            "transformations/image/introduction",
+            "transformations/image/resize",
+            "transformations/image/crop",
+            "transformations/image/effects",
+            "transformations/image/overlays",
+            "transformations/image/optimization"
+          ]
+        },
+        {
+          "group": "Video",
+          "pages": [
+            "transformations/video/introduction",
+            "transformations/video/resize",
+            "transformations/video/crop",
+            "transformations/video/effects",
+            "transformations/video/overlays",
+            "transformations/video/format",
+            "transformations/video/thumbnails"
+          ]
+        },
+        {
+          "group": "Document",
+          "pages": [
+            "transformations/document/introduction",
+            "transformations/document/format-and-compression",
+            "transformations/document/thumbnails"
+          ]
+        }
       ]
     },
     {
@@ -75,17 +112,29 @@
       ]
     },
     {
-      "group": "Endpoint Examples",
+      "group": "File Operations",
       "pages": [
-        "api-reference/endpoint/get",
-        "api-reference/endpoint/create",
-        "api-reference/endpoint/delete"
+        "api-reference/endpoint/upload",
+        "api-reference/endpoint/delete",
+        "api-reference/endpoint/signed-url"
+      ]
+    },
+    {
+      "group": "Multipart Upload",
+      "pages": [
+        "api-reference/endpoint/multipart-start",
+        "api-reference/endpoint/multipart-upload",
+        "api-reference/endpoint/multipart-complete",
+        "api-reference/endpoint/multipart-cancel"
+      ]
+    },
+    {
+      "group": "Bucket Operations",
+      "pages": [
+        "api-reference/endpoint/list-bucket"
       ]
     }
-  ],
-  "footerSocials": {
-    "x": "https://x.com/mintlify",
-    "github": "https://github.com/mintlify",
-    "linkedin": "https://linkedin.com/company/mintlify"
-  }
+  
+  ]
+  
 }

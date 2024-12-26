@@ -1,94 +1,67 @@
 {
   "openapi": "3.0.1",
   "info": {
-    "title": "OpenAPI Plant Store",
-    "description": "A sample API that uses a plant store as an example to demonstrate features in the OpenAPI specification",
-    "license": {
-      "name": "MIT"
-    },
+    "title": "File Storage API",
+    "description": "API for managing file storage operations including uploads, downloads, and bucket management",
     "version": "1.0.0"
   },
   "servers": [
     {
-      "url": "http://sandbox.mintlify.com"
+      "url": "https://api.apexxcloud.com"
     }
   ],
   "security": [
     {
-      "bearerAuth": []
+      "apiAuth": [],
+      "signatureAuth": [],
+      "timestampAuth": []
     }
   ],
   "paths": {
-    "/plants": {
-      "get": {
-        "description": "Returns all plants from the system that the user has access to",
+    "/api/v1/files/upload": {
+      "put": {
+        "summary": "Upload File",
         "parameters": [
           {
-            "name": "limit",
+            "name": "bucket_name",
             "in": "query",
-            "description": "The maximum number of results to return",
+            "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int32"
+              "type": "string"
+            }
+          },
+          {
+            "name": "region",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "visibility",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["public", "private"]
+            }
+          },
+          {
+            "name": "key",
+            "in": "query",
+            "schema": {
+              "type": "string"
+             
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "Plant response",
+            "description": "File uploaded successfully",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Plant"
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "description": "Creates a new plant in the store",
-        "requestBody": {
-          "description": "Plant to add to the store",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NewPlant"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "plant response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Plant"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "$ref": "#/components/schemas/UploadResponse"
                 }
               }
             }
@@ -96,32 +69,470 @@
         }
       }
     },
-    "/plants/{id}": {
-      "delete": {
-        "description": "Deletes a single plant based on the ID supplied",
+    "/api/v1/files/multipart/start": {
+      "post": {
+        "summary": "Start Multipart Upload",
         "parameters": [
           {
-            "name": "id",
-            "in": "path",
-            "description": "ID of plant to delete",
+            "name": "bucket_name",
+            "in": "query",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int64"
+              "type": "string"
+            }
+          },
+          {
+            "name": "region",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "totalParts",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "mimeType",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "visibility",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["public", "private"]
             }
           }
         ],
         "responses": {
-          "204": {
-            "description": "Plant deleted",
-            "content": {}
-          },
-          "400": {
-            "description": "unexpected error",
+          "200": {
+            "description": "Multipart upload initiated",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "$ref": "#/components/schemas/MultipartStartResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/files/multipart/{uploadId}/upload": {
+      "post": {
+        "summary": "Upload Part",
+        "parameters": [
+          {
+            "name": "uploadId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "bucket_name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "region",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "partNumber",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "totalParts",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Part uploaded successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadPartResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/files/multipart/{uploadId}/complete": {
+      "post": {
+        "summary": "Complete Multipart Upload",
+        "parameters": [
+          {
+            "name": "uploadId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "bucket_name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "region",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["parts"],
+                "properties": {
+                  "parts": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": ["PartNumber", "ETag"],
+                      "properties": {
+                        "PartNumber": {
+                          "type": "integer"
+                        },
+                        "ETag": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Multipart upload completed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string",
+                          "example": "Multipart upload completed successfully"
+                        },
+                        "key": {
+                          "type": "string"
+                        },
+                        "location": {
+                          "type": "string",
+                          "example": "https://cdn.apexxcloud.com/f/{access_id}/{path}"
+                        },
+                        "size": {
+                          "type": "integer"
+                        },
+                        "bucket": {
+                          "type": "string"
+                        },
+                        "region": {
+                          "type": "string"
+                        },
+                        "visibility": {
+                          "type": "string",
+                          "enum": ["public", "private"]
+                        },
+                        "content_type": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Bucket not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Bucket not found"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/files/multipart/{uploadId}/cancel": {
+      "post": {
+        "summary": "Cancel Multipart Upload",
+        "parameters": [
+          {
+            "name": "uploadId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "bucket_name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "region",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Multipart upload cancelled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MultipartCancelResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/files/list": {
+      "get": {
+        "summary": "List Bucket Contents",
+        "parameters": [
+          {
+            "name": "bucket_name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "region",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "prefix",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of bucket contents",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListBucketResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/files/delete": {
+      "delete": {
+        "summary": "Delete File",
+        "parameters": [
+          {
+            "name": "bucket_name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "region",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "File deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/files/signed-url": {
+      "get": {
+        "summary": "Get Signed URL",
+        "parameters": [
+          {
+            "name": "bucket_name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "region",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "expiresIn",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Signed URL generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignedUrlResponse"
                 }
               }
             }
@@ -132,63 +543,250 @@
   },
   "components": {
     "schemas": {
-      "Plant": {
-        "required": [
-          "name"
-        ],
+      "UploadResponse": {
         "type": "object",
         "properties": {
-          "name": {
-            "description": "The name of the plant",
-            "type": "string"
-          },
-          "tag": {
-            "description": "Tag to specify the type",
-            "type": "string"
-          }
-        }
-      },
-      "NewPlant": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Plant"
-          },
-          {
-            "required": [
-              "id"
-            ],
+          "data": {
             "type": "object",
             "properties": {
-              "id": {
-                "description": "Identification number of the plant",
-                "type": "integer",
-                "format": "int64"
+              "message": {
+                "type": "string"
+              },
+              "key": {
+                "type": "string"
+              },
+              "location": {
+                "type": "string"
+              },
+              "bucket": {
+                "type": "string"
+              },
+              "region": {
+                "type": "string"
+              },
+              "visibility": {
+                "type": "string"
+              },
+              "size": {
+                "type": "integer"
+              },
+              "content_type": {
+                "type": "string"
               }
             }
           }
-        ]
+        }
       },
-      "Error": {
-        "required": [
-          "error",
-          "message"
-        ],
+      "MultipartStartResponse": {
         "type": "object",
         "properties": {
-          "error": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "message": {
-            "type": "string"
+          "data": {
+            "type": "object",
+            "properties": {
+              "uploadId": {
+                "type": "string"
+              },
+              "key": {
+                "type": "string"
+              },
+              "bucket": {
+                "type": "string"
+              },
+              "fileId": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "UploadPartResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "partNumber": {
+                "type": "integer"
+              },
+              "ETag": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "MultipartCompleteResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string"
+              },
+              "key": {
+                "type": "string"
+              },
+              "location": {
+                "type": "string"
+              },
+              "size": {
+                "type": "integer"
+              },
+              "bucket": {
+                "type": "string"
+              },
+              "region": {
+                "type": "string"
+              },
+              "visibility": {
+                "type": "string"
+              },
+              "content_type": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "MultipartCancelResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "ListBucketResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "contents": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string"
+                  },
+                  "path": {
+                    "type": "string"
+                  },
+                  "children": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "type": "string"
+                        },
+                        "path": {
+                          "type": "string"
+                        },
+                        "size": {
+                          "type": "integer"
+                        },
+                        "content_type": {
+                          "type": "string"
+                        },
+                        "last_modified": {
+                          "type": "string"
+                        },
+                        "visibility": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "pagination": {
+                "type": "object",
+                "properties": {
+                  "current_page": {
+                    "type": "integer"
+                  },
+                  "total_pages": {
+                    "type": "integer"
+                  },
+                  "total_items": {
+                    "type": "integer"
+                  },
+                  "items_per_page": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "DeleteResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string",
+                "example": "File and all transformations deleted successfully"
+              }
+            }
+          }
+        }
+      },
+      "SignedUrlResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string",
+                "example": "https://cdn.apexxcloud.com/f/abc123/example.jpg?signature=xyz789"
+              },
+              "expires_in": {
+                "type": "integer",
+                "example": 3600
+              },
+              "is_public": {
+                "type": "boolean",
+                "example": false
+              }
+            }
           }
         }
       }
     },
     "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer"
+      "apiAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Access-Key",
+        "description": "Your API Access Key"
+      },
+      "signatureAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Signature",
+        "description": "HMAC SHA-256 signature of the request"
+      },
+      "timestampAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Timestamp",
+        "description": "ISO 8601 timestamp of the request"
       }
     }
   }

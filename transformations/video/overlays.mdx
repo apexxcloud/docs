@@ -1,0 +1,100 @@
+# Video Overlay Transformations
+
+Add text, image, and video overlays to your videos using our transformation parameters.
+
+## Layer Types
+
+Layers are added using the `l_{type}:{options}` parameter. Multiple layers can be chained with plus signs.
+
+### Text Overlays
+
+Add text overlays to your video:
+
+```
+tr-l_text:Hello World:l_font_Arial:l_size_32:l_color_FFFFFF:l_gravity_north_west:l_x_20:l_y_20:l_o_100
+```
+
+Text layer parameters:
+
+- Text content (first parameter after type)
+- `l_font_{name}`: Font family name
+- `l_size_{pixels}`: Font size (1-500, default: 24)
+- `l_color_{hex}`: Text color (default: 000000)
+- `l_gravity_{position}`: Position anchor (default: center)
+- `l_x_{pixels}`: X offset from gravity point
+- `l_y_{pixels}`: Y offset from gravity point
+- `l_o_{opacity}`: Opacity 0-100 (default: 100)
+
+### Image Overlays
+
+Add image overlays like watermarks:
+
+```
+tr-l_image:l_key_watermarks@@logo.png:l_gravity_south_east:l_x_10:l_y_10:l_o_50
+```
+
+Image layer parameters:
+
+- `l_key_{path}`: Media path (use @@ instead of /)
+- `l_gravity_{position}`: Position anchor
+- `l_x_{pixels}`: X offset
+- `l_y_{pixels}`: Y offset
+- `l_o_{opacity}`: Opacity 0-100
+- `l_scale_{factor}`: Scale factor 0-10
+- `l_width_{pixels}`: Target width
+- `l_height_{pixels}`: Target height
+- `l_ar_{ratio}`: Target aspect ratio
+
+### Video Overlays
+
+Add video overlays like intros, watermarks, or picture-in-picture:
+
+```
+tr-l_video:l_key_overlays@@intro.mp4:l_gravity_center:l_x_0:l_y_0:l_o_100
+```
+
+Video layer parameters:
+
+- `l_key_{path}`: Media path (use @@ instead of /)
+- `l_gravity_{position}`: Position anchor
+- `l_x_{pixels}`: X offset
+- `l_y_{pixels}`: Y offset
+- `l_o_{opacity}`: Opacity 0-100
+- `l_scale_{factor}`: Scale factor 0-10
+- `l_width_{pixels}`: Target width
+- `l_height_{pixels}`: Target height
+- `l_ar_{ratio}`: Target aspect ratio
+
+## Position Reference
+
+Available gravity positions:
+
+- `center` (default)
+- `north`, `south`, `east`, `west`
+- `north_east`, `north_west`, `south_east`, `south_west`
+
+## Examples
+
+### Video Picture-in-Picture
+
+```
+tr-w_1280,h_720+l_video:l_key_secondary@@interview.mp4:l_gravity_north_east:l_width_320:l_height_180:l_x_20:l_y_20
+```
+
+### Video Intro with Watermark
+
+```
+tr-l_video:l_key_overlays@@intro.mp4:l_gravity_center+l_image:l_key_watermarks@@logo.png:l_gravity_south_east
+```
+
+### Text Over Video
+
+```
+tr-l_text:Breaking News:l_color_FFFFFF:l_size_48:l_gravity_north:l_y_40+l_text:Live Coverage:l_color_FF0000:l_size_32:l_gravity_north:l_y_100
+```
+
+### Multiple Layer Types
+
+```
+tr-w_1280,h_720+l_video:l_key_overlays@@lower-third.mp4:l_gravity_south:l_y_40+l_text:Live:l_color_FF0000:l_gravity_north_east:l_x_20:l_y_20
+```

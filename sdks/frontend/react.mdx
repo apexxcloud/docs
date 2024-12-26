@@ -1,0 +1,253 @@
+---
+title: "React SDK"
+description: "Documentation for ApexxCloud React SDK"
+---
+
+## Installation
+
+<CodeGroup>
+
+```bash npm
+npm install @apexxcloud/react
+```
+
+```bash yarn
+yarn add @apexxcloud/react
+```
+
+</CodeGroup>
+
+## useApexxCloud Hook
+
+A custom hook for granular control over the upload process.
+
+### Basic Usage
+
+```tsx
+import { useApexxCloud } from "@apexxcloud/react";
+
+function CustomUploader() {
+  const { upload } = useApexxCloud();
+  const [progress, setProgress] = useState(0);
+  const abortController = useRef(new AbortController());
+
+  const handleUpload = async (file: File) => {
+    try {
+      const signedUrl = await getSignedUrl(file);
+
+      await upload(signedUrl, file, {
+        signal: abortController.current.signal,
+        onStart: (event) => {
+          console.log(`Starting upload: ${event.file.name}`);
+        },
+        onProgress: (event) => {
+          setProgress(event.progress);
+        },
+        onComplete: (event) => {
+          console.log("Upload complete:", event.response);
+        },
+        onError: (event) => {
+          if (event.type === "abort") {
+            console.log("Upload cancelled");
+          } else {
+            console.error("Upload failed:", event.error);
+          }
+        },
+      });
+    } catch (error) {
+      console.error("Upload failed:", error);
+    }
+  };
+
+  const cancelUpload = () => {
+    abortController.current.abort();
+  };
+
+  // Clean up on unmount
+  useEffect(() => {
+    return () => {
+      abortController.current.abort();
+    };
+  }, []);
+
+  return (
+    <div>
+      <input
+        type="file"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) handleUpload(file);
+        }}
+      />
+      <button onClick={cancelUpload}>Cancel Upload</button>
+      <progress value={progress} max="100" />
+    </div>
+  );
+}
+```
+
+### Hook Return Value
+
+| Property | Type                                                                       | Description               |
+| -------- | -------------------------------------------------------------------------- | ------------------------- |
+| `upload` | `(signedUrl: string, file: File, options?: UploadOptions) => Promise<any>` | Function to upload a file |
+
+### UploadOptions
+
+| Option       | Type                             | Description                       |
+| ------------ | -------------------------------- | --------------------------------- |
+| `signal`     | `AbortSignal`                    | AbortSignal for cancelling upload |
+| `onStart`    | `(event: StartEvent) => void`    | Called when upload starts         |
+| `onProgress` | `(event: ProgressEvent) => void` | Called during upload progress     |
+| `onComplete` | `(event: CompleteEvent) => void` | Called when upload completes      |
+| `onError`    | `(event: ErrorEvent) => void`    | Called if upload fails            |
+
+## FileUploader Component
+
+A React component that provides file upload functionality with built-in UI and progress tracking.
+
+### Basic Usage
+
+```tsx
+import { FileUploader } from "@apexxcloud/react";
+
+function App() {
+  const getSignedUrl = async (file: File) => {
+    const response = await fetch("/api/get-signed-url", {
+      method: "POST",
+      body: JSON.stringify({
+        fileName: file.name,
+        fileType: file.type,
+      }),
+    });
+    const { signedUrl } = await response.json();
+    return signedUrl;
+  };
+
+  return (
+    <FileUploader
+      getSignedUrl={getSignedUrl}
+      onUploadComplete={(response) => console.log("Upload complete:", response)}
+    />
+  );
+}
+```
+
+### Props
+
+| Prop               | Type                              | Required | Description                               |
+| ------------------ | --------------------------------- | -------- | ----------------------------------------- |
+| `getSignedUrl`     | `(file: File) => Promise<string>` | Yes      | Function to get signed URL for upload     |
+| `onUploadComplete` | `(response: any) => void`         | No       | Called when upload completes successfully |
+| `onUploadError`    | `(error: any) => void`            | No       | Called if upload fails                    |
+| `onUploadProgress` | `(progress: any) => void`         | No       | Called during upload progress             |
+
+### Complete Example
+
+```tsx
+import { FileUploader } from "@apexxcloud/react";
+
+function UploadComponent() {
+  const getSignedUrl = async (file: File) => {
+    const response = await fetch("/api/get-signed-url", {
+      method: "POST",
+      body: JSON.stringify({
+        fileName: file.name,
+        fileType: file.type,
+      }),
+    });
+    return response.json();
+  };
+
+  const handleUploadComplete = (response) => {
+    console.log("Upload successful:", response);
+    // Handle success (e.g., show success message)
+  };
+
+  const handleUploadError = (error) => {
+    console.error("Upload failed:", error);
+    // Handle error (e.g., show error message)
+  };
+
+  const handleProgress = (progress) => {
+    console.log(`Upload progress: ${progress}%`);
+    // Update UI with progress
+  };
+
+  return (
+    <FileUploader
+      getSignedUrl={getSignedUrl}
+      onUploadComplete={handleUploadComplete}
+      onUploadError={handleUploadError}
+      onUploadProgress={handleProgress}
+    />
+  );
+}
+```
+
+## Best Practices
+
+1. **Error Handling**
+
+```tsx
+<FileUploader
+  getSignedUrl={getSignedUrl}
+  onUploadError={(error) => {
+    if (error.type === "abort") {
+      toast.info("Upload cancelled");
+    } else {
+      toast.error("Upload failed: " + error.message);
+    }
+  }}
+/>
+```
+
+2. **Cleanup**
+
+```tsx
+function UploadComponent() {
+  const abortController = useRef(new AbortController());
+
+  useEffect(() => {
+    return () => {
+      // Cancel ongoing upload when component unmounts
+      abortController.current.abort();
+    };
+  }, []);
+
+  // ... rest of the component
+}
+```
+
+3. **Multiple File Handling**
+
+```tsx
+function MultipleFileUploader() {
+  const { upload } = useApexxCloud();
+
+  const handleFiles = async (files: FileList) => {
+    const uploads = Array.from(files).map((file) => {
+      const controller = new AbortController();
+      return {
+        file,
+        controller,
+        promise: getSignedUrl(file).then((url) =>
+          upload(url, file, { signal: controller.signal })
+        ),
+      };
+    });
+
+    try {
+      const results = await Promise.all(uploads.map((u) => u.promise));
+      console.log("All uploads complete:", results);
+    } catch (error) {
+      console.error("One or more uploads failed:", error);
+    }
+  };
+}
+```
+
+## Requirements
+
+- React 16.8+ (Hooks support)
+- @apexxcloud/sdk-js as a peer dependency

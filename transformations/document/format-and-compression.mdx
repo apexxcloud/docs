@@ -1,0 +1,75 @@
+# Format & Compression
+
+Control document formats and quality settings with our format and compression transformations. These transformations allow you to convert between document types and optimize file sizes while maintaining appropriate quality levels.
+
+## Format Conversion
+
+Convert documents between supported formats using the format parameter.
+
+### Format Parameter
+
+- **Parameter**: `f_{format}`
+- **Values**: `pdf`, `docx`, `xlsx`, `pptx`
+- **Example**: `tr-f_pdf`
+
+```
+https://cdn.apexxcloud.com/f/abc123/tr-f_pdf/documents/contract.docx
+```
+
+### Format-Specific Features
+
+| Format | Features                                                                                    | Best For                                                  |
+| ------ | ------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| PDF    | - Supports all transformations<br/>- Best compression options<br/>- Universal compatibility | - Document sharing<br/>- Archival<br/>- Print-ready files |
+| DOCX   | - Maintains editability<br/>- Basic compression                                             | - Editable documents<br/>- Word processing                |
+| XLSX   | - Preserves formulas<br/>- Basic compression                                                | - Spreadsheet data<br/>- Calculations                     |
+| PPTX   | - Maintains animations<br/>- Basic compression                                              | - Presentations<br/>- Slideshows                          |
+
+## Quality & Compression
+
+Optimize document file size while maintaining appropriate quality levels.
+
+### Quality Settings
+
+- **Parameter**: `q_{value}`
+- **Values**:
+  - `auto:high`: Minimal compression, best quality
+  - `auto:standard`: Balanced compression (recommended)
+  - `auto:low`: Maximum compression
+- **Example**: `tr-q_auto:standard`
+
+```
+https://cdn.apexxcloud.com/f/abc123/tr-q_auto:standard/documents/report.pdf
+```
+
+### Compression Mode
+
+- **Parameter**: `c_{mode}`
+- **Values**:
+  - `high`: Maximum compression
+  - `medium`: Balanced compression
+  - `low`: Minimal compression
+- **Example**: `tr-c_high`
+
+```
+https://cdn.apexxcloud.com/f/abc123/tr-c_high/documents/presentation.pptx
+```
+
+**Note**: Use either quality (`q_`) or compression (`c_`) parameters, but not both together.
+
+## Page Selection
+
+Control which pages are included in the output document.
+
+### Page Range
+
+- **Parameter**: `p_{range}`
+- **Values**:
+  - Single page: `p_1`
+  - Page range: `p_1-3`
+  - Multiple ranges: `p_1-3,5-7`
+- **Example**: `tr-p_1-3`
+
+```
+https://cdn.apexxcloud.com/f/abc123/tr-f_pdf,p_1-3/documents/report.docx
+```
