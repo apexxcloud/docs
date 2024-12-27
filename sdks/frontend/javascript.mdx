@@ -35,8 +35,8 @@ Your backend needs to implement an endpoint that generates signed URLs. Here's a
 const ApexxCloud = require("@apexxcloud/sdk-node");
 
 const storage = new ApexxCloud({
-  accessKey: "your-access-key",
-  secretKey: "your-secret-key",
+  accessKey: process.env.APEXXCLOUD_ACCESS_KEY,
+  secretKey: process.env.APEXXCLOUD_SECRET_KEY,
   region: "bucket-region",
   bucket: "bucket-name",
 });
