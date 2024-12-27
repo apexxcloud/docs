@@ -89,7 +89,7 @@ const getSignedUrl = async (type, params) => {
 };
 
 try {
-  const result = await storage.files.upload(file, getSignedUrl, {
+  const result = await storage.files.upload(getSignedUrl, file, {
     signal: controller.signal,
 
     onStart: (event) => {
@@ -141,7 +141,7 @@ controller.abort();
 const controller = new AbortController();
 
 try {
-  const result = await storage.files.uploadMultipart(file, getSignedUrl, {
+  const result = await storage.files.uploadMultipart(getSignedUrl, file, {
     signal: controller.signal,
     partSize: 5 * 1024 * 1024, // 5MB chunks (optional)
     concurrency: 3, // Number of concurrent uploads (optional)
@@ -194,7 +194,7 @@ The SDK provides detailed error information through the onError callback:
 
 ```javascript
 try {
-  await storage.files.upload(file, getSignedUrl, {
+  await storage.files.upload(getSignedUrl, file, {
     onError: (event) => {
       if (event.type === "abort") {
         console.log("Upload was cancelled");
