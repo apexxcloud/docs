@@ -42,13 +42,12 @@ const storage = new ApexxCloud({
 
 ```javascript
 // Simple upload
-
-const fileData = fs.readFileSync("./local-file.jpg");
-const result = await storage.files.upload(fileData, {
+const result = await storage.files.upload(fileBuffer, {
   key: "path/to/file.jpg", // required - path/name in bucket
   bucketName: "bucket-name", // optional if default bucket set
-  visibility: "public", // optional, defaults to 'public'
+  visibility: "private", // optional, defaults to 'private'
   region: "us-east-1", // optional, overrides default region
+  contentType: "image/jpeg", // optional, specify mime type
 });
 ```
 
@@ -77,76 +76,13 @@ const url = await storage.files.getSignedUrl(
 ### Generate Pre-Signed URLs for Operations
 
 ```javascript
-// Generate pre-signed URL for upload
-const uploadUrl = await storage.getSignedUrl(
+// All operations use storage.files.getSignedUrl instead of storage.getSignedUrl
+const signedUrl = await storage.files.getSignedUrl(
   "bucket-name",
   "path/to/file.jpg",
   {
-    type: "upload",
-    visibility: "public", // optional
-  }
-);
-
-// Generate pre-signed URL for delete
-const deleteUrl = await storage.getSignedUrl(
-  "bucket-name",
-  "path/to/file.jpg",
-  {
-    type: "delete",
-  }
-);
-
-// Generate pre-signed URL for download
-const downloadUrl = await storage.getSignedUrl(
-  "bucket-name",
-  "path/to/file.jpg",
-  {
-    type: "download",
-    expiresIn: 3600, // optional, defaults to 1 hour
-  }
-);
-
-// Generate pre-signed URL for starting multipart upload
-const startMultipartUrl = await storage.getSignedUrl(
-  "bucket-name",
-  "large-file.zip",
-  {
-    type: "start-multipart",
-    totalParts: 3, // required
-    mimeType: "application/zip", // required
-    visibility: "public", // optional
-  }
-);
-
-// Generate pre-signed URL for uploading a part
-const uploadPartUrl = await storage.getSignedUrl(
-  "bucket-name",
-  "large-file.zip",
-  {
-    type: "uploadpart",
-    uploadId: "upload-id", // required
-    partNumber: 1, // required
-    totalParts: 3, // required
-  }
-);
-
-// Generate pre-signed URL for completing multipart upload
-const completeMultipartUrl = await storage.getSignedUrl(
-  "bucket-name",
-  "large-file.zip",
-  {
-    type: "completemultipart",
-    uploadId: "upload-id", // required
-  }
-);
-
-// Generate pre-signed URL for canceling multipart upload
-const cancelMultipartUrl = await storage.getSignedUrl(
-  "bucket-name",
-  "large-file.zip",
-  {
-    type: "cancelmultipart",
-    uploadId: "upload-id", // required
+    type: "operation-type", // required
+    // ... other parameters depending on operation
   }
 );
 ```

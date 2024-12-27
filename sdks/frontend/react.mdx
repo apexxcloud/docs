@@ -25,22 +25,33 @@ A custom hook for granular control over the upload process.
 
 ```tsx
 import { useApexxCloud } from "@apexxcloud/react";
+import { useEffect, useRef } from "react";
+import { useState } from "react";
 
-function CustomUploader() {
-  const { upload } = useApexxCloud();
+export default function CustomUploader() {
+  const { upload, uploadMultipart } = useApexxCloud();
   const [progress, setProgress] = useState(0);
   const abortController = useRef(new AbortController());
 
-  // Function to get signed URLs from your backend
-  const getSignedUrl = async (type: string, params: SignedUrlOptions) => {
-    const response = await fetch(`/api/get-signed-url/${type}`, {
-      method: "POST",
-      body: JSON.stringify(params),
-    });
-    return response.text();
+  const getSignedUrl = async (type: string, params: any) => {
+    const response = await fetch(
+      `http://localhost:5000/api/files/get-signed-url/${type}`,
+      {
+        method: "POST",
+        body: JSON.stringify(params),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const data = await response.json();
+    return data.url;
   };
 
   const handleUpload = async (file: File) => {
+    setProgress(0);
+    abortController.current = new AbortController();
+
     try {
       await upload(getSignedUrl, file, {
         signal: abortController.current.signal,
@@ -52,26 +63,26 @@ function CustomUploader() {
         },
         onComplete: (event) => {
           console.log("Upload complete:", event.response);
+          setProgress(0);
         },
         onError: (event) => {
           if (event.type === "abort") {
             console.log("Upload cancelled");
+            setProgress(0);
           } else {
             console.error("Upload failed:", event.error);
           }
         },
       });
     } catch (error) {
-      console.error("Upload failed:", error);
+      if (error instanceof DOMException && error.name === "AbortError") {
+        console.log("Upload aborted");
+      } else {
+        console.error("Upload failed:", error);
+      }
+      setProgress(0);
     }
   };
-
-  // Clean up on unmount
-  useEffect(() => {
-    return () => {
-      abortController.current.abort();
-    };
-  }, []);
 
   return (
     <div>
@@ -82,7 +93,12 @@ function CustomUploader() {
           if (file) handleUpload(file);
         }}
       />
-      <button onClick={() => abortController.current.abort()}>
+      <button
+        onClick={() => {
+          abortController.current.abort();
+          setProgress(0);
+        }}
+      >
         Cancel Upload
       </button>
       <progress value={progress} max="100" />
@@ -94,38 +110,64 @@ function CustomUploader() {
 ### Multipart Upload Example
 
 ```tsx
-function MultipartUploader() {
-  const { uploadMultipart } = useApexxCloud();
+import { useApexxCloud } from "@apexxcloud/react";
+import { useEffect, useRef } from "react";
+import { useState } from "react";
+
+export default function MultipartUploader() {
+  const { upload, uploadMultipart } = useApexxCloud();
   const [progress, setProgress] = useState(0);
-  const [partProgress, setPartProgress] = useState<Record<number, number>>({});
   const abortController = useRef(new AbortController());
 
+  const getSignedUrl = async (type: string, params: any) => {
+    const response = await fetch(
+      `http://localhost:5000/api/files/get-signed-url/${type}`,
+      {
+        method: "POST",
+        body: JSON.stringify(params),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const data = await response.json();
+    return data.url;
+  };
+
   const handleUpload = async (file: File) => {
+    setProgress(0);
+    abortController.current = new AbortController();
+
     try {
+      //  just replace upload with uploadMultipart
       await uploadMultipart(getSignedUrl, file, {
         signal: abortController.current.signal,
-        partSize: 5 * 1024 * 1024, // 5MB chunks
-        concurrency: 3, // Number of concurrent uploads
+        onStart: (event) => {
+          console.log(`Starting upload: ${event.file.name}`);
+        },
         onProgress: (event) => {
           setProgress(event.progress);
-          setPartProgress((prev) => ({
-            ...prev,
-            [event.part.number]: event.part.progress,
-          }));
-        },
-        onPartComplete: (part) => {
-          console.log(`Part ${part.PartNumber} completed`);
         },
         onComplete: (event) => {
           console.log("Upload complete:", event.response);
+          setProgress(0);
         },
         onError: (event) => {
-          console.error("Upload failed:", event.error);
-          console.error("Failed during phase:", event.phase);
+          if (event.type === "abort") {
+            console.log("Upload cancelled");
+            setProgress(0);
+          } else {
+            console.error("Upload failed:", event.error);
+          }
         },
       });
     } catch (error) {
-      console.error("Upload failed:", error);
+      if (error instanceof DOMException && error.name === "AbortError") {
+        console.log("Upload aborted");
+      } else {
+        console.error("Upload failed:", error);
+      }
+      setProgress(0);
     }
   };
 
@@ -138,12 +180,15 @@ function MultipartUploader() {
           if (file) handleUpload(file);
         }}
       />
-      <div>Overall Progress: {progress}%</div>
-      {Object.entries(partProgress).map(([part, progress]) => (
-        <div key={part}>
-          Part {part}: {progress}%
-        </div>
-      ))}
+      <button
+        onClick={() => {
+          abortController.current.abort();
+          setProgress(0);
+        }}
+      >
+        Cancel Upload
+      </button>
+      <progress value={progress} max="100" />
     </div>
   );
 }
