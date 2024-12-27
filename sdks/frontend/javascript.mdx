@@ -64,13 +64,13 @@ app.post("/api/get-signed-url/:type", async (req, res) => {
 
 The endpoint should handle these types of requests:
 
-| Type              | Description               | Required Parameters                   | Example Response                                                           |
-| ----------------- | ------------------------- | ------------------------------------- | -------------------------------------------------------------------------- |
-| upload            | Single file upload        | key, mimeType                         | `https://api.apexxcloud.com/upload?x-signature=...`                        |
-| start-multipart   | Start multipart upload    | key, totalParts, mimeType             | `https://api.apexxcloud.com/multipart/start?x-signature=...`               |
-| uploadpart        | Upload individual part    | uploadId, partNumber, key, totalParts | `https://api.apexxcloud.com/multipart/{uploadId}/upload?x-signature=...`   |
-| completemultipart | Complete multipart upload | uploadId, key                         | `https://api.apexxcloud.com/multipart/{uploadId}/complete?x-signature=...` |
-| cancelmultipart   | Cancel multipart upload   | uploadId, key                         | `https://api.apexxcloud.com/multipart/{uploadId}/cancel?signature=...`     |
+| Type              | Description               | Required Parameters                   | Example Response                                                         |
+| ----------------- | ------------------------- | ------------------------------------- | ------------------------------------------------------------------------ |
+| upload            | Single file upload        | key, mimeType                         | `https://api.apexxcloud.com/upload?signature=...`                        |
+| start-multipart   | Start multipart upload    | key, totalParts, mimeType             | `https://api.apexxcloud.com/multipart/start?signature=...`               |
+| uploadpart        | Upload individual part    | uploadId, partNumber, key, totalParts | `https://api.apexxcloud.com/multipart/{uploadId}/upload?signature=...`   |
+| completemultipart | Complete multipart upload | uploadId, key                         | `https://api.apexxcloud.com/multipart/{uploadId}/complete?signature=...` |
+| cancelmultipart   | Cancel multipart upload   | uploadId, key                         | `https://api.apexxcloud.com/multipart/{uploadId}/cancel?signature=...`   |
 
 ## File Upload
 
