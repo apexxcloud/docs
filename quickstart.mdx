@@ -58,24 +58,26 @@ const storage = new ApexxCloud({
 
 ### React
 
-```jsx
-import { FileUploader } from "@apexxcloud/react";
+```tsx
+import { useApexxCloud } from "@apexxcloud/react";
+import { useRef, useState } from "react";
 
 function App() {
-  const getSignedUrl = async (file) => {
-    // Get signed URL from your backend
-    const response = await fetch("/api/get-signed-url");
-    return response.json();
-  };
+  const { upload, uploadMultipart } = useApexxCloud();
 
-  return (
-    <FileUploader
-      getSignedUrl={getSignedUrl}
-      onUploadComplete={(response) => console.log("Upload complete:", response)}
-    />
-  );
+  //...
 }
 ```
+
+The `useApexxCloud` hook provides:
+
+- Simple file upload handling
+- Progress tracking
+- Error handling
+- Upload cancellation
+- Multipart upload support
+
+For more advanced usage, including the FileUploader component, check out the [React SDK documentation](/sdks/frontend/react).
 
 ## Next Steps
 
