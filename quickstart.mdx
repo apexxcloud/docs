@@ -77,60 +77,6 @@ function App() {
 }
 ```
 
-## Basic Operations
-
-### Upload a File
-
-<CodeGroup>
-
-```javascript Node.js
-const result = await storage.files.upload("my-bucket", "./path/to/image.jpg", {
-  visibility: "public",
-});
-```
-
-```javascript Browser
-const fileInput = document.querySelector('input[type="file"]');
-const file = fileInput.files[0];
-
-await storage.files.upload(signedUrl, file, {
-  onProgress: (event) => console.log(`Progress: ${event.progress}%`),
-});
-```
-
-</CodeGroup>
-
-### Apply Transformations
-
-Once your file is uploaded, you can apply various transformations using URL parameters:
-
-#### Image Transformations
-
-```
-https://cdn.apexxcloud.com/f/access_id/tr-w_500,h_300,c_fill/image.jpg
-```
-
-<AccordionGroup>
-  <Accordion icon="image" title="Common Image Transformations">
-    - Resize: `tr-w_500,h_300`
-    - Crop: `tr-c_crop,g_face`
-    - Format conversion: `tr-f_webp`
-    - Quality: `tr-q_auto:good`
-  </Accordion>
-  
-  <Accordion icon="video" title="Common Video Transformations">
-    - Resize: `tr-w_1280,h_720`
-    - Thumbnail: `thumb-w_100,h_100`
-    - Format: `tr-f_mp4`
-  </Accordion>
-
-  <Accordion icon="file" title="Common Document Transformations">
-    - Convert to PDF: `tr-f_pdf`
-    - Extract thumbnail: `thumb-w_100,h_100`
-    - Compress: `tr-c_high`
-  </Accordion>
-</AccordionGroup>
-
 ## Next Steps
 
 <CardGroup>
