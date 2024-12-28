@@ -225,3 +225,126 @@ The multipart upload process includes different phases where errors might occur:
 | upload   | During the upload of individual parts         |
 | complete | During the completion of multipart upload     |
 | cancel   | During attempt to cancel a failed upload      |
+
+## Image Transformations
+
+The SDK provides a powerful image transformation API that allows you to modify images on-the-fly:
+
+```javascript
+const storage = new ApexxCloud({
+  accessId: "your-access-id",
+  cdnUrl: "https://cdn.apexxcloud.com", // optional
+});
+
+// Basic transformations
+const url = storage.transformimage
+  .width(800)
+  .height(600)
+  .crop("fill")
+  .quality("auto:good")
+  .buildUrl("path/to/image.jpg");
+
+// Chaining multiple transformations
+const complexUrl = storage.transformimage
+  .width(800)
+  .height(600)
+  .crop("fill")
+  .chain()
+  .blur(20)
+  .grayscale()
+  .buildUrl("path/to/image.jpg");
+```
+
+### Available Image Transformations
+
+| Transformation | Method                        | Parameters                                         | Example                          |
+| -------------- | ----------------------------- | -------------------------------------------------- | -------------------------------- |
+| Width          | `width(value)`                | 1-5000px                                           | `.width(800)`                    |
+| Height         | `height(value)`               | 1-5000px                                           | `.height(600)`                   |
+| Crop           | `crop(mode)`                  | 'fill', 'fit', 'scale', etc.                       | `.crop('fill')`                  |
+| Quality        | `quality(value)`              | 1-100 or 'auto:best/good/eco/low'                  | `.quality('auto:good')`          |
+| Format         | `format(type)`                | 'auto', 'webp', 'jpeg', 'png', 'avif'              | `.format('webp')`                |
+| Blur           | `blur(radius)`                | 1-100                                              | `.blur(20)`                      |
+| Grayscale      | `grayscale()`                 | -                                                  | `.grayscale()`                   |
+| Background     | `background(color)`           | hex color or 'transparent'                         | `.background('#ff0000')`         |
+| Border         | `border(width, style, color)` | width(px), style, hex color                        | `.border(2, 'solid', '#000000')` |
+| Radius         | `radius(value)`               | px or [topLeft, topRight, bottomRight, bottomLeft] | `.radius(10)`                    |
+| Opacity        | `opacity(value)`              | 0-100                                              | `.opacity(50)`                   |
+
+## Video Transformations
+
+Similar to images, you can transform videos:
+
+```javascript
+// Basic video transformation
+const videoUrl = storage.transformvideo
+  .width(1280)
+  .height(720)
+  .format("mp4")
+  .buildUrl("path/to/video.mp4");
+
+// Generate video thumbnail
+const thumbnailUrl = storage.transformvideo
+  .thumbnail(5.0) // Seek to 5 seconds
+  .width(400)
+  .height(300)
+  .crop("fill")
+  .buildUrl("path/to/video.mp4");
+```
+
+### Available Video Transformations
+
+| Transformation | Method                  | Parameters                   | Example               |
+| -------------- | ----------------------- | ---------------------------- | --------------------- |
+| Width          | `width(value)`          | 1-5000px                     | `.width(1280)`        |
+| Height         | `height(value)`         | 1-5000px                     | `.height(720)`        |
+| Format         | `format(type)`          | 'mp4', 'webm', 'mov', 'auto' | `.format('mp4')`      |
+| Thumbnail      | `thumbnail(seekOffset)` | Time in seconds              | `.thumbnail(5.0)`     |
+| Crop           | `crop(mode)`            | 'crop', 'fill', 'fit', etc.  | `.crop('fill')`       |
+| Background     | `background(color)`     | hex color or 'blur'          | `.background('blur')` |
+
+## Document Transformations
+
+Transform and convert documents:
+
+```javascript
+// Convert document format
+const pdfUrl = storage.transformdocument
+  .format("pdf")
+  .quality("auto:high")
+  .buildUrl("path/to/document.docx");
+
+// Generate document thumbnail
+const thumbnailUrl = storage.transformdocument
+  .thumbnail(1) // First page
+  .width(800)
+  .height(1200)
+  .buildUrl("path/to/document.pdf");
+```
+
+### Available Document Transformations
+
+| Transformation | Method            | Parameters                               | Example                 |
+| -------------- | ----------------- | ---------------------------------------- | ----------------------- |
+| Format         | `format(type)`    | 'pdf', 'docx', 'xlsx', 'pptx'            | `.format('pdf')`        |
+| Quality        | `quality(mode)`   | 'auto:high', 'auto:standard', 'auto:low' | `.quality('auto:high')` |
+| Compress       | `compress(mode)`  | 'high', 'medium', 'low'                  | `.compress('medium')`   |
+| Pages          | `pages(range)`    | number or range ('1-3,5-7')              | `.pages('1-3')`         |
+| Thumbnail      | `thumbnail(page)` | Page number                              | `.thumbnail(1)`         |
+
+### Chaining Transformations
+
+You can chain multiple transformations together using the `chain()` method:
+
+```javascript
+const url = storage.transformimage
+  .width(800)
+  .height(600)
+  .crop("fill")
+  .chain()
+  .blur(20)
+  .grayscale()
+  .buildUrl("path/to/image.jpg");
+```
+
+Each transformation chain is applied sequentially, allowing for complex transformation pipelines.

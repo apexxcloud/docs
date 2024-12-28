@@ -196,10 +196,14 @@ export default function MultipartUploader() {
 
 ### Hook Return Value
 
-| Property          | Type                                                                                           | Description                     |
-| ----------------- | ---------------------------------------------------------------------------------------------- | ------------------------------- |
-| `upload`          | `(getSignedUrl: GetSignedUrlFn, file: File, options?: UploadOptions) => Promise<any>`          | Function for single file upload |
-| `uploadMultipart` | `(getSignedUrl: GetSignedUrlFn, file: File, options?: MultipartUploadOptions) => Promise<any>` | Function for multipart upload   |
+| Property              | Type                                                                                           | Description                          |
+| --------------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------ |
+| `upload`              | `(getSignedUrl: GetSignedUrlFn, file: File, options?: UploadOptions) => Promise<any>`          | Function for single file upload      |
+| `uploadMultipart`     | `(getSignedUrl: GetSignedUrlFn, file: File, options?: MultipartUploadOptions) => Promise<any>` | Function for multipart upload        |
+| `transformImage`      | `TransformBuilder`                                                                             | Builder for image transformations    |
+| `transformVideo`      | `VideoTransformBuilder`                                                                        | Builder for video transformations    |
+| `transformDocument`   | `DocumentTransformBuilder`                                                                     | Builder for document transformations |
+| `transformWithString` | `(path: string, transformations: string \| string[]) => string`                                | Direct transformation using strings  |
 
 ### Upload Options
 
@@ -576,3 +580,100 @@ This implementation includes:
 
 - React 16.8+ (Hooks support)
 - @apexxcloud/sdk-js as a peer dependency
+
+## Transformations
+
+### Image Transformations
+
+```tsx
+import { useApexxCloud } from "@apexxcloud/react";
+
+function ImageTransformExample() {
+  const { transformImage } = useApexxCloud();
+
+  // Basic transformations
+  const url = transformImage
+    .width(800)
+    .height(600)
+    .crop("fill")
+    .quality("auto:good")
+    .buildUrl("path/to/image.jpg");
+
+  // Chaining multiple transformations
+  const complexUrl = transformImage
+    .width(800)
+    .height(600)
+    .crop("fill")
+    .chain()
+    .blur(20)
+    .grayscale()
+    .buildUrl("path/to/image.jpg");
+
+  return (
+    <div>
+      <img src={url} alt="Transformed image" />
+      <img src={complexUrl} alt="Complex transformed image" />
+    </div>
+  );
+}
+```
+
+### Video Transformations
+
+```tsx
+function VideoTransformExample() {
+  const { transformVideo } = useApexxCloud();
+
+  // Basic video transformation
+  const videoUrl = transformVideo
+    .width(1280)
+    .height(720)
+    .format("mp4")
+    .buildUrl("path/to/video.mp4");
+
+  // Generate video thumbnail
+  const thumbnailUrl = transformVideo
+    .thumbnail(5.0) // Seek to 5 seconds
+    .width(400)
+    .height(300)
+    .crop("fill")
+    .buildUrl("path/to/video.mp4");
+
+  return (
+    <div>
+      <video src={videoUrl} controls />
+      <img src={thumbnailUrl} alt="Video thumbnail" />
+    </div>
+  );
+}
+```
+
+### Document Transformations
+
+```tsx
+function DocumentTransformExample() {
+  const { transformDocument } = useApexxCloud();
+
+  // Convert document format
+  const pdfUrl = transformDocument
+    .format("pdf")
+    .quality("auto:high")
+    .buildUrl("path/to/document.docx");
+
+  // Generate document thumbnail
+  const thumbnailUrl = transformDocument
+    .thumbnail(1) // First page
+    .width(800)
+    .height(1200)
+    .buildUrl("path/to/document.pdf");
+
+  return (
+    <div>
+      <iframe src={pdfUrl} />
+      <img src={thumbnailUrl} alt="Document thumbnail" />
+    </div>
+  );
+}
+```
+
+For detailed information about available transformation options, see the [JavaScript SDK documentation](/sdks/frontend/javascript#transformations).
