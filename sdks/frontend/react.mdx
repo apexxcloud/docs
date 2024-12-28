@@ -225,106 +225,352 @@ Includes all Upload Options plus:
 
 See the [JavaScript SDK documentation](/sdks/frontend/javascript#backend-implementation) for details on implementing the backend signed URL endpoint.
 
-## FileUploader Component
+## File Uploader Component
 
-A React component that provides a drag-and-drop file upload interface with progress tracking and error handling.
-
-### Basic Usage
+The SDK provides a pre-built `FileUploader` component that you can use out of the box:
 
 ```tsx
 import { FileUploader } from "@apexxcloud/react";
 
 function App() {
   const getSignedUrl = async (type, params) => {
-    const response = await fetch("/api/get-signed-url", {
-      method: "POST",
-      body: JSON.stringify(params),
-    });
-    return response.text();
+    // Your signed URL implementation
   };
 
   return (
     <FileUploader
       getSignedUrl={getSignedUrl}
       onUploadComplete={(response) => console.log("Upload complete:", response)}
+      onUploadError={(error) => console.error("Upload failed:", error)}
+      multipart={false}
+      accept={{ "image/*": [".png", ".jpg", ".jpeg"] }}
+      maxSize={10} // MB
     />
   );
 }
 ```
 
-### Props
+### Component Props
 
-| Prop               | Type                       | Required | Description                                                      |
-| ------------------ | -------------------------- | -------- | ---------------------------------------------------------------- |
-| `getSignedUrl`     | `GetSignedUrlFn`           | Yes      | Function to get signed URL for upload                            |
-| `onUploadComplete` | `(response: any) => void`  | No       | Called when upload completes successfully                        |
-| `onUploadError`    | `(error: Error) => void`   | No       | Called if upload fails                                           |
-| `multipart`        | `boolean`                  | No       | Enable multipart upload (default: false)                         |
-| `accept`           | `Record<string, string[]>` | No       | File type restrictions (e.g., `{ 'image/*': ['.png', '.jpg'] }`) |
-| `maxSize`          | `number`                   | No       | Maximum file size in bytes                                       |
-| `className`        | `string`                   | No       | Additional CSS class names                                       |
+| Prop               | Type                       | Description                                   |
+| ------------------ | -------------------------- | --------------------------------------------- |
+| `getSignedUrl`     | `GetSignedUrlFn`           | Function to get signed URLs from your backend |
+| `onUploadComplete` | `(response: any) => void`  | Called when upload completes successfully     |
+| `onUploadError`    | `(error: Error) => void`   | Called when upload fails                      |
+| `multipart`        | `boolean`                  | Enable multipart upload for large files       |
+| `accept`           | `Record<string, string[]>` | Accepted file types                           |
+| `maxSize`          | `number`                   | Maximum file size in MB                       |
 
-### Complete Example
+## Custom Implementation
 
-```tsx
-import { FileUploader } from "@apexxcloud/react";
+If you want to customize the uploader or build your own, here's the complete implementation of our FileUploader component that you can use as a reference:
 
-function UploadComponent() {
-  const getSignedUrl = async (type, params) => {
-    const response = await fetch("/api/get-signed-url", {
-      method: "POST",
-      body: JSON.stringify(params),
+<CodeGroup>
+
+```tsx FileUploader.tsx
+import React, { useCallback, useState, useRef } from "react";
+import { useDropzone } from "react-dropzone";
+import { useApexxCloud } from "../hooks/useApexxCloud";
+import {
+  GetSignedUrlFn,
+  ProgressEvent,
+  MultipartProgressEvent,
+} from "@apexxcloud/sdk-js";
+import clsx from "clsx";
+import "./FileUploader.css";
+
+interface FileUploaderProps {
+  getSignedUrl: GetSignedUrlFn;
+  onUploadComplete?: (response: any) => void;
+  onUploadError?: (error: Error) => void;
+  multipart?: boolean;
+  accept?: Record<string, string[]>;
+  maxSize?: number;
+}
+
+export const FileUploader: React.FC<FileUploaderProps> = ({
+  getSignedUrl,
+  onUploadComplete,
+  onUploadError,
+  multipart = false,
+  accept,
+  maxSize,
+}) => {
+  const { upload, uploadMultipart } = useApexxCloud();
+  const [progress, setProgress] = useState(0);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  const handleProgress = useCallback(
+    (event: ProgressEvent | MultipartProgressEvent) => {
+      setProgress(event.progress);
+    },
+    []
+  );
+
+  const handleUpload = useCallback(
+    async (file: File) => {
+      setError(null);
+      setUploading(true);
+      setProgress(0);
+      abortControllerRef.current = new AbortController();
+
+      try {
+        const uploadFn = multipart ? uploadMultipart : upload;
+        const result = await uploadFn(getSignedUrl, file, {
+          onProgress: handleProgress,
+          onComplete: (event) => {
+            setProgress(100);
+            onUploadComplete?.(event.response);
+          },
+          onError: (event) => {
+            setError(event.error.message);
+            onUploadError?.(event.error);
+          },
+          signal: abortControllerRef.current.signal,
+          ...(multipart && {
+            partSize: 5 * 1024 * 1024, // 5MB chunks
+            concurrency: 3,
+          }),
+        });
+        return result;
+      } catch (error) {
+        if (error instanceof Error) {
+          setError(error.message);
+          onUploadError?.(error);
+        }
+      } finally {
+        setUploading(false);
+      }
+    },
+    [
+      upload,
+      uploadMultipart,
+      getSignedUrl,
+      multipart,
+      onUploadComplete,
+      onUploadError,
+    ]
+  );
+
+  const handleCancel = useCallback(() => {
+    abortControllerRef.current?.abort();
+    setUploading(false);
+    setProgress(0);
+  }, []);
+
+  const { getRootProps, getInputProps, isDragActive, fileRejections } =
+    useDropzone({
+      onDrop: useCallback(
+        (acceptedFiles: File[]) => {
+          const file = acceptedFiles[0];
+          if (file) handleUpload(file);
+        },
+        [handleUpload]
+      ),
+      accept,
+      maxSize: maxSize ? maxSize * 1024 * 1024 : undefined,
+      multiple: false,
+      disabled: uploading,
     });
-    return response.text();
-  };
+
+  const acceptedFileTypes = accept
+    ? Object.values(accept).flat().join(", ")
+    : "All files";
+  const maxSizeFormatted = maxSize ? `${maxSize}MB` : "Unlimited";
 
   return (
-    <FileUploader
-      getSignedUrl={getSignedUrl}
-      multipart={true}
-      accept={{
-        "image/*": [".png", ".jpg", ".jpeg", ".gif"],
-        "application/pdf": [".pdf"],
-      }}
-      maxSize={10 * 1024 * 1024} // 10MB
-      onUploadComplete={(response) => {
-        console.log("Upload successful:", response);
-        // Handle success (e.g., show success message)
-      }}
-      onUploadError={(error) => {
-        console.error("Upload failed:", error);
-        // Handle error (e.g., show error message)
-      }}
-      className="max-w-lg mx-auto" // Custom styling
-    />
+    <div className={clsx("apexx-uploader-container")}>
+      <div
+        {...getRootProps()}
+        className={clsx(
+          "apexx-uploader-dropzone",
+          isDragActive && "active",
+          uploading && "disabled"
+        )}
+      >
+        <input {...getInputProps()} />
+
+        {uploading ? (
+          <div className="apexx-uploader-progress">
+            <div className="apexx-uploader-progress-bar">
+              <div
+                className="apexx-uploader-progress-fill"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginTop: "0.5rem",
+              }}
+            >
+              <span>{progress.toFixed(0)}% complete</span>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleCancel();
+                }}
+                className="apexx-uploader-cancel"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="apexx-uploader-content">
+            <svg
+              className="apexx-uploader-icon"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+              />
+            </svg>
+            <p>Drop files here or click to upload</p>
+            <small className="apexx-uploader-limits">
+              Accepted: {acceptedFileTypes}
+              <br />
+              Max size: {maxSizeFormatted}
+            </small>
+          </div>
+        )}
+
+        {fileRejections.length > 0 && (
+          <div className="apexx-uploader-error">
+            {fileRejections[0].errors
+              .map((err) =>
+                err.code === "file-too-large"
+                  ? `File is too large. Maximum size is ${maxSize}MB`
+                  : err.message
+              )
+              .join(", ")}
+          </div>
+        )}
+
+        {error && <div className="apexx-uploader-error">{error}</div>}
+      </div>
+    </div>
   );
+};
+```
+
+```css FileUploader.css
+.apexx-uploader-container {
+  width: 100%;
+  max-width: 42rem;
+  margin: 0 auto;
+}
+
+.apexx-uploader-dropzone {
+  padding: 1.5rem;
+  border: 2px dashed #e5e7eb;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.apexx-uploader-dropzone.active {
+  border-color: #3b82f6;
+  background: #eff6ff;
+}
+
+.apexx-uploader-dropzone:not(.disabled):hover {
+  border-color: #9ca3af;
+  cursor: pointer;
+}
+
+.apexx-uploader-progress {
+  margin-top: 1rem;
+}
+
+.apexx-uploader-progress-bar {
+  position: relative;
+  width: 100%;
+  height: 0.5rem;
+  background: #e5e7eb;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.apexx-uploader-progress-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: #3b82f6;
+  transition: width 0.3s ease;
+}
+
+.apexx-uploader-content {
+  text-align: center;
+}
+
+.apexx-uploader-icon {
+  width: 3rem;
+  height: 3rem;
+  margin: 0 auto 1rem;
+  color: #9ca3af;
+  transition: color 0.2s ease;
+}
+
+.active .apexx-uploader-icon {
+  color: #3b82f6;
+}
+
+.apexx-uploader-error {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: #fef2f2;
+  border-radius: 0.375rem;
+  color: #dc2626;
+  font-size: 0.875rem;
+}
+
+.apexx-uploader-cancel {
+  padding: 0.25rem 0.75rem;
+  color: #dc2626;
+  font-size: 0.875rem;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease;
+}
+
+.apexx-uploader-cancel:hover {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.apexx-uploader-limits {
+  color: #666;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+}
+
+.apexx-uploader-error {
+  color: #dc2626;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
 }
 ```
 
-### Features
+</CodeGroup>
 
-1. **Drag and Drop**
+This implementation includes:
 
-   - Visual feedback during drag operations
-   - File type validation
-   - Size restrictions
-
-2. **Upload Progress**
-
-   - Real-time progress bar
-   - Percentage indicator
-   - Cancel button during upload
-
-3. **Error Handling**
-
-   - Visual error messages
-   - File validation errors
-   - Upload failure handling
-
-4. **Accessibility**
-   - Keyboard navigation support
-   - ARIA attributes
-   - Focus management
+- Drag and drop support
+- Upload progress tracking
+- Error handling
+- File type and size validation
+- Upload cancellation
+- Responsive design
+- Accessibility features
 
 ## Requirements
 
