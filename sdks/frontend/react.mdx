@@ -48,7 +48,7 @@ export default function CustomUploader() {
     return data.url;
   };
 
-  const handleUpload = async (file: File) => {
+  const handleUpload = async (file) => {
     setProgress(0);
     abortController.current = new AbortController();
 
@@ -134,7 +134,7 @@ export default function MultipartUploader() {
     return data.url;
   };
 
-  const handleUpload = async (file: File) => {
+  const handleUpload = async (file) => {
     setProgress(0);
     abortController.current = new AbortController();
 
@@ -235,7 +235,7 @@ A React component that provides a drag-and-drop file upload interface with progr
 import { FileUploader } from "@apexxcloud/react";
 
 function App() {
-  const getSignedUrl = async (type: string, params: SignedUrlOptions) => {
+  const getSignedUrl = async (type, params) => {
     const response = await fetch("/api/get-signed-url", {
       method: "POST",
       body: JSON.stringify(params),
@@ -270,7 +270,7 @@ function App() {
 import { FileUploader } from "@apexxcloud/react";
 
 function UploadComponent() {
-  const getSignedUrl = async (type: string, params: SignedUrlOptions) => {
+  const getSignedUrl = async (type, params) => {
     const response = await fetch("/api/get-signed-url", {
       method: "POST",
       body: JSON.stringify(params),
