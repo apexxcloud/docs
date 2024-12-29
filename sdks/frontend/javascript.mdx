@@ -253,23 +253,69 @@ const complexUrl = storage.transformimage
   .blur(20)
   .grayscale()
   .buildUrl("path/to/image.jpg");
+
+// Text overlay
+const withText = storage.transformimage
+  .text("Hello World", {
+    font: "Arial",
+    size: 32,
+    color: "#FFFFFF",
+    gravity: "center",
+    opacity: 100,
+  })
+  .buildUrl("path/to/image.jpg");
+
+// Image overlay
+const withImage = storage.transformimage
+  .overlay("path/to/logo.png", {
+    type: "image",
+    gravity: "southeast",
+    x: 20,
+    y: 20,
+    width: 100,
+    opacity: 80,
+  })
+  .buildUrl("path/to/image.jpg");
 ```
 
 ### Available Image Transformations
 
-| Transformation | Method                        | Parameters                                         | Example                          |
-| -------------- | ----------------------------- | -------------------------------------------------- | -------------------------------- |
-| Width          | `width(value)`                | 1-5000px                                           | `.width(800)`                    |
-| Height         | `height(value)`               | 1-5000px                                           | `.height(600)`                   |
-| Crop           | `crop(mode)`                  | 'fill', 'fit', 'scale', etc.                       | `.crop('fill')`                  |
-| Quality        | `quality(value)`              | 1-100 or 'auto:best/good/eco/low'                  | `.quality('auto:good')`          |
-| Format         | `format(type)`                | 'auto', 'webp', 'jpeg', 'png', 'avif'              | `.format('webp')`                |
-| Blur           | `blur(radius)`                | 1-100                                              | `.blur(20)`                      |
-| Grayscale      | `grayscale()`                 | -                                                  | `.grayscale()`                   |
-| Background     | `background(color)`           | hex color or 'transparent'                         | `.background('#ff0000')`         |
-| Border         | `border(width, style, color)` | width(px), style, hex color                        | `.border(2, 'solid', '#000000')` |
-| Radius         | `radius(value)`               | px or [topLeft, topRight, bottomRight, bottomLeft] | `.radius(10)`                    |
-| Opacity        | `opacity(value)`              | 0-100                                              | `.opacity(50)`                   |
+| Transformation | Method                        | Parameters             | Example                         |
+| -------------- | ----------------------------- | ---------------------- | ------------------------------- |
+| Width          | `width(value)`                | 1-5000px               | `.width(800)`                   |
+| Height         | `height(value)`               | 1-5000px               | `.height(600)`                  |
+| Crop           | `crop(mode)`                  | 'fill', 'fit', 'scale' | `.crop('fill')`                 |
+| Quality        | `quality(value)`              | 1-100 or auto modes    | `.quality('auto:good')`         |
+| Format         | `format(type)`                | 'auto', 'webp', 'jpeg' | `.format('webp')`               |
+| Blur           | `blur(radius)`                | 1-100                  | `.blur(20)`                     |
+| Grayscale      | `grayscale()`                 | -                      | `.grayscale()`                  |
+| Background     | `background(color)`           | hex or 'transparent'   | `.background('#ff0000')`        |
+| Border         | `border(width, style, color)` | width, style, color    | `.border(2, 'solid', '#000')`   |
+| Radius         | `radius(value)`               | pixels or array        | `.radius(10)`                   |
+| Opacity        | `opacity(value)`              | 0-100                  | `.opacity(50)`                  |
+| Text Overlay   | `text(text, options)`         | text, options          | `.text('Hello', options)`       |
+| Image Overlay  | `overlay(path, options)`      | path, options          | `.overlay('logo.png', options)` |
+
+### Overlay Options
+
+| Option        | Type   | Description        | Supported Types |
+| ------------- | ------ | ------------------ | --------------- |
+| `type`        | string | 'image' or 'video' | Video only      |
+| `gravity`     | string | Position on target | All             |
+| `x`           | number | Horizontal offset  | All             |
+| `y`           | number | Vertical offset    | All             |
+| `scale`       | number | Scale factor       | Image, Video    |
+| `width`       | number | Width in pixels    | Image, Video    |
+| `height`      | number | Height in pixels   | Image, Video    |
+| `opacity`     | number | Opacity (0-100)    | All             |
+| `aspectRatio` | string | Aspect ratio       | Image, Video    |
+
+Text-specific options:
+| Option | Type | Description |
+| ------ | ---- | ----------- |
+| `font` | string | Font family name |
+| `size` | number | Font size in pixels |
+| `color` | string | Text color (hex) |
 
 ## Video Transformations
 
@@ -290,18 +336,76 @@ const thumbnailUrl = storage.transformvideo
   .height(300)
   .crop("fill")
   .buildUrl("path/to/video.mp4");
+
+// Text overlay
+const withText = storage.transformvideo
+  .text("Hello World", {
+    font: "Arial",
+    size: 32,
+    color: "#FFFFFF",
+    gravity: "center",
+    opacity: 100,
+  })
+  .buildUrl("path/to/video.mp4");
+
+// Image overlay
+const withImage = storage.transformvideo
+  .overlay("path/to/logo.png", {
+    type: "image",
+    gravity: "southeast",
+    x: 20,
+    y: 20,
+    width: 100,
+    opacity: 80,
+  })
+  .buildUrl("path/to/video.mp4");
+
+// Video overlay (for videos only)
+const withVideoOverlay = storage.transformvideo
+  .overlay("path/to/overlay.mp4", {
+    type: "video",
+    gravity: "center",
+    width: 200,
+    height: 200,
+    opacity: 70,
+  })
+  .buildUrl("path/to/video.mp4");
 ```
 
 ### Available Video Transformations
 
-| Transformation | Method                  | Parameters                   | Example               |
-| -------------- | ----------------------- | ---------------------------- | --------------------- |
-| Width          | `width(value)`          | 1-5000px                     | `.width(1280)`        |
-| Height         | `height(value)`         | 1-5000px                     | `.height(720)`        |
-| Format         | `format(type)`          | 'mp4', 'webm', 'mov', 'auto' | `.format('mp4')`      |
-| Thumbnail      | `thumbnail(seekOffset)` | Time in seconds              | `.thumbnail(5.0)`     |
-| Crop           | `crop(mode)`            | 'crop', 'fill', 'fit', etc.  | `.crop('fill')`       |
-| Background     | `background(color)`     | hex color or 'blur'          | `.background('blur')` |
+| Transformation | Method                   | Parameters            | Example                            |
+| -------------- | ------------------------ | --------------------- | ---------------------------------- |
+| Width          | `width(value)`           | 1-5000px              | `.width(1280)`                     |
+| Height         | `height(value)`          | 1-5000px              | `.height(720)`                     |
+| Format         | `format(type)`           | 'mp4', 'webm', 'mov'  | `.format('mp4')`                   |
+| Thumbnail      | `thumbnail(seekOffset)`  | seconds               | `.thumbnail(5.0)`                  |
+| Crop           | `crop(mode)`             | 'crop', 'fill', 'fit' | `.crop('fill')`                    |
+| Background     | `background(color)`      | hex or 'blur'         | `.background('blur')`              |
+| Text Overlay   | `text(text, options)`    | text, options         | `.text('Title', options)`          |
+| Image Overlay  | `overlay(path, options)` | path, options         | `.overlay('logo.png', imageOpts)`  |
+| Video Overlay  | `overlay(path, options)` | path, options         | `.overlay('intro.mp4', videoOpts)` |
+
+### Overlay Options
+
+| Option        | Type   | Description        | Supported Types |
+| ------------- | ------ | ------------------ | --------------- |
+| `type`        | string | 'image' or 'video' | Video only      |
+| `gravity`     | string | Position on target | All             |
+| `x`           | number | Horizontal offset  | All             |
+| `y`           | number | Vertical offset    | All             |
+| `scale`       | number | Scale factor       | Image, Video    |
+| `width`       | number | Width in pixels    | Image, Video    |
+| `height`      | number | Height in pixels   | Image, Video    |
+| `opacity`     | number | Opacity (0-100)    | All             |
+| `aspectRatio` | string | Aspect ratio       | Image, Video    |
+
+Text-specific options:
+| Option | Type | Description |
+| ------ | ---- | ----------- |
+| `font` | string | Font family name |
+| `size` | number | Font size in pixels |
+| `color` | string | Text color (hex) |
 
 ## Document Transformations
 
