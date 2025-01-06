@@ -10,6 +10,14 @@ ApexxCloud provides powerful cloud storage and media transformation capabilities
 - Setting up your SDK
 - Uploading your first file
 - Applying transformations
+- Connecting external storage (optional)
+
+<Note>
+  Already have an S3, R2, or Spaces bucket? You can connect your existing bucket
+  to use our transformation and CDN features while keeping your files in your
+  own storage. [Learn more about connecting your
+  bucket](/integrations-and-migrations/connect-your-s3-bucket).
+</Note>
 
 ## Installation
 
@@ -85,6 +93,16 @@ The `useApexxCloud` hook provides:
 
 For more advanced usage, including the FileUploader component, check out the [React SDK documentation](/sdks/frontend/react).
 
+## External Storage Support
+
+ApexxCloud supports connecting your existing storage buckets:
+
+- AWS S3
+- Cloudflare R2
+- DigitalOcean Spaces
+
+Learn more about [connecting your external bucket](/integrations-and-migrations/connect-your-s3-bucket).
+
 ## Example Repository
 
 Check out our [example repository](https://github.com/jagan-blip/apexx-cloud-example) for a complete working implementation using our SDKs.
@@ -103,15 +121,11 @@ The example repository demonstrates:
   <Card title="SDK Documentation" icon="code" href="/sdks/backend/nodejs">
     Explore detailed SDK documentation for your platform
   </Card>
-
-{" "}
-
-<Card
-  title="Transformations"
-  icon="wand-magic-sparkles"
-  href="/transformations/image"
->
-  Learn about our powerful transformation capabilities
-</Card>
-
+  <Card
+    title="Transformations"
+    icon="wand-magic-sparkles"
+    href="/transformations/image"
+  >
+    Learn about our powerful transformation capabilities
+  </Card>
 </CardGroup>

@@ -114,6 +114,12 @@
       ]
     },
     {
+      "group": "Integrations and Migrations",
+      "pages": [
+        "integrations and migrations/Connect your s3 bucket"
+      ]
+    },
+    {
       "group": "API Documentation",
       "pages": [
         "api-reference/introduction"

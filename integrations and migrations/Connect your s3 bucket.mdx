@@ -1,0 +1,73 @@
+---
+title: "Connect Your S3 Bucket"
+description: "Documentation for connecting your S3 bucket to ApexxCloud"
+---
+
+# Connect Your S3 Bucket
+
+You can connect your existing storage bucket to ApexxCloud through our dashboard to use our transformation and CDN capabilities while maintaining your storage.
+
+## Dashboard Connection
+
+1. Navigate to the Buckets section in your ApexxCloud dashboard
+2. Click "Create Bucket"
+3. Enable "Use external bucket (BYOB)"
+4. Fill in the required details:
+   - External Bucket Type:
+     - AWS S3
+     - Cloudflare R2
+     - DigitalOcean Spaces
+   - Access Key
+   - Secret Access Key
+   - External Bucket Name
+   - Region
+
+<Note>
+  We only need read access to your bucket. Make sure you have the necessary
+  permissions set up in your cloud provider.
+</Note>
+
+## Usage
+
+Once connected:
+
+- Use ApexxCloud's transformation features and CDN with files in your bucket
+- All file operations (upload, delete, etc.) must be done directly through your storage provider
+- Original files remain in your bucket
+- Transformed versions are managed by ApexxCloud
+
+### Example URLs
+
+Original S3 URL:
+
+```
+https://my-bucket.s3.amazonaws.com/images/photo.jpg
+```
+
+New ApexxCloud URL (with transformations):
+
+```
+https://cdn.apexxcloud.com/f/{access_id}/tr-w_500,h_300/images/photo.jpg
+```
+
+You should use the same object key from your original bucket.
+
+## Required Permissions
+
+Your bucket policy must include:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": ["s3:GetObject", "s3:ListBucket"],
+      "Resource": [
+        "arn:aws:s3:::YOUR_BUCKET_NAME/*",
+        "arn:aws:s3:::YOUR_BUCKET_NAME"
+      ]
+    }
+  ]
+}
+```
