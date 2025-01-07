@@ -116,7 +116,7 @@
     {
       "group": "Integrations and Migrations",
       "pages": [
-        "integrations and migrations/Connect your s3 bucket"
+        "integrations and migrations/connect-your-existing-storage"
       ]
     },
     {
