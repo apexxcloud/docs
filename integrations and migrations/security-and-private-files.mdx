@@ -1,0 +1,29 @@
+ApexxCloud provides a secure and private file storage solution with advanced security features, including encryption, access control, and data protection.
+
+### Encryption
+
+ApexxCloud encrypts all files at rest using AES-256 encryption.
+
+### Access Control
+
+ApexxCloud provides access control to your files through file-level permissions.
+
+### Data Protection
+
+ApexxCloud protects your data from unauthorized access and data loss through a combination of backup and recovery mechanisms.
+
+### Signed URLs
+
+A signed URL will have a `signature` query parameter. The signature is generated using your access key, secret key and the URL. When generating a signed URL, you can specify the expiration time of the URL.
+
+A signed URL is valid for 1 hour by default.
+
+Typical signed URL looks like this:
+
+```
+https://cdn.apexxcloud.com/f/{access_id}/path/to/file.jpg?signature=67808f9fb19e19f1eef63b48:1736667721:f2e97d795bd09fa4a64ab0bad1675a2e25fddebc0e805f1107d22bb32747558c
+```
+
+### Private files with Your Own Buckets
+
+Aws S3 - If you are delivery file from your own S3 bucket, You can set the object metadata `x-amz-meta-isprivatefile` as true to mark the file as private. Here's the [documentation](https://docs.aws.amazon.com/AmazonS3/latest/userguide/add-object-metadata.html)

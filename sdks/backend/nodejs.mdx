@@ -42,11 +42,9 @@ const storage = new ApexxCloud({
 
 ```javascript
 // Simple upload
-const result = await storage.files.upload(fileBuffer, {
-  key: "path/to/file.jpg", // required - path/name in bucket
+const result = await storage.files.upload("path/to/file.jpg", fileBuffer, {
   bucketName: "bucket-name", // optional if default bucket set
   visibility: "private", // optional, defaults to 'private'
-  region: "us-east-1", // optional, overrides default region
   contentType: "image/jpeg", // optional, specify mime type
 });
 ```
@@ -54,37 +52,30 @@ const result = await storage.files.upload(fileBuffer, {
 ### Delete a File
 
 ```javascript
-await storage.files.delete(
-  "bucket-name", // optional if default bucket set
-  "path/to/file.jpg" // file key in bucket
-);
+await storage.files.delete("path/to/file.jpg", {
+  bucketName: "bucket-name", // optional if default bucket set
+});
 ```
 
 ### Get a Signed URL for Download
 
 ```javascript
-const url = await storage.files.getSignedUrl(
-  "bucket-name", // optional if default bucket set
-  "path/to/file.jpg", // file key in bucket
-  {
-    type: "download",
-    expiresIn: 3600, // optional, defaults to 1 hour (in seconds)
-  }
-);
+const url = await storage.files.getSignedUrl("download", {
+  bucketName: "bucket-name", // optional if default bucket set
+  key: "path/to/file.jpg",
+  expiresIn: 3600, // optional, defaults to 1 hour (in seconds)
+});
 ```
 
 ### Generate Pre-Signed URLs for Operations
 
 ```javascript
 // All operations use storage.files.getSignedUrl instead of storage.getSignedUrl
-const signedUrl = await storage.files.getSignedUrl(
-  "bucket-name",
-  "path/to/file.jpg",
-  {
-    type: "operation-type", // required
-    // ... other parameters depending on operation
-  }
-);
+const signedUrl = await storage.files.getSignedUrl("upload", {
+  bucketName: "bucket-name", // optional if default bucket set
+  key: "path/to/file.jpg",
+  expiresIn: 3600, // optional, defaults to 1 hour (in seconds)
+});
 ```
 
 Available operation types:
@@ -97,48 +88,55 @@ Available operation types:
 - `completemultipart`: Complete multipart upload
 - `cancelmultipart`: Cancel multipart upload
 
+### Purge a File Cache
+
+```javascript
+const result = await storage.files.purge("path/to/file.jpg", {
+  bucketName: "bucket-name", // optional if default bucket set
+});
+```
+
+This will purge cdn cache for the original file and all the transformations of the file
+
 ## Multipart Upload
 
 ```javascript
 // 1. Start the multipart upload
-const upload = await storage.files.startMultipartUpload(
-  "bucket-name",
-  "large-file.zip",
-  {
-    totalParts: 3, // required
-    mimeType: "application/zip", // required
-    visibility: "public", // optional
-  }
-);
+const upload = await storage.files.startMultipartUpload("large-file.zip", {
+  bucketName: "bucket-name", // optional if default bucket set
+  totalParts: 3, // required
+  mimeType: "application/zip", // optional
+  visibility: "public", // optional
+});
 
 // 2. Upload individual parts
+const parts = [];
 for (let partNumber = 1; partNumber <= 3; partNumber++) {
   const partResult = await storage.files.uploadPart(
-    upload.uploadId,
-    partNumber,
+    "large-file.zip",
     filePartBuffer,
     {
-      key: "large-file.zip", // required
       bucketName: "bucket-name", // optional if default bucket set
-      totalParts: 3, // required
+      uploadId: upload.uploadId,
+      partNumber: partNumber,
+      totalParts: 3,
     }
   );
   parts.push(partResult);
 }
 
 // 3. Complete the multipart upload
-await storage.files.completeMultipartUpload(upload.uploadId, parts, {
-  key: "large-file.zip", // required
+await storage.files.completeMultipartUpload("large-file.zip", parts, {
   bucketName: "bucket-name", // optional if default bucket set
+  uploadId: upload.uploadId,
 });
 ```
 
 If you need to cancel the upload:
 
 ```javascript
-await storage.files.cancelMultipartUpload(uploadId, {
-  bucketName: "bucket-name",
-  key: "file-key",
+await storage.files.cancelMultipartUpload("file-key", {
+  bucketName: "bucket-name", // optional if default bucket set
 });
 ```
 
@@ -147,14 +145,12 @@ await storage.files.cancelMultipartUpload(uploadId, {
 ### List Bucket Contents
 
 ```javascript
-const contents = await storage.bucket.listContents(
-  "bucket-name", // optional if default bucket set
-  {
-    prefix: "folder/", // optional, filter by prefix
-    page: 1, // optional, defaults to 1
-    limit: 20, // optional, defaults to 20
-  }
-);
+const contents = await storage.bucket.listContents({
+  bucketName: "bucket-name", // optional if default bucket set
+  prefix: "folder/", // optional, filter by prefix
+  page: 1, // optional, defaults to 1
+  limit: 20, // optional, defaults to 20
+});
 ```
 
 ## Error Handling
@@ -163,7 +159,9 @@ The SDK uses a consistent error handling pattern:
 
 ```javascript
 try {
-  await storage.files.upload("bucket-name", "./file.jpg");
+  await storage.files.upload("./file.jpg", fileBuffer, {
+    bucketName: "bucket-name", // optional if default bucket set
+  });
 } catch (error) {
   console.error("Upload failed:", error);
 }

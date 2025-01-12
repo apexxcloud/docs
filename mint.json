@@ -116,7 +116,8 @@
     {
       "group": "Integrations and Migrations",
       "pages": [
-        "integrations and migrations/connect-your-existing-storage"
+        "integrations and migrations/connect-your-existing-storage",
+        "integrations and migrations/security-and-private-files"
       ]
     },
     {
